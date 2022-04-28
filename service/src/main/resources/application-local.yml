@@ -1,0 +1,5 @@
+server:
+  ssl:
+    key-alias: localhost
+    key-store: classpath:localhost.p12
+    key-store-password: password

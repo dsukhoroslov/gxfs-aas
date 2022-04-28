@@ -4,6 +4,15 @@ server:
   servlet:
     session:
       timeout: 10m
+  http2:
+    enabled: true
+  ssl:
+    enabled: true
+    protocol: TLS
+    key-store-type: PKCS12
+    key-alias:
+    key-store:
+    key-store-password:
 
 spring:
   profiles:
@@ -14,8 +23,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://${server.host}:${server.port}
-          jwk-set-uri: http://${server.host}:${server.port}/oauth2/jwks
+          issuer-uri: https://${server.host}:${server.port}
+          jwk-set-uri: https://${server.host}:${server.port}/oauth2/jwks
   messages:
     encoding: ISO-8859-1
 management:
