@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.server.authorization.OAuth2Authorizat
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -72,7 +73,11 @@ public class SsiJwtCustomizer implements OAuth2TokenCustomizer<JwtEncodingContex
     private String getRequestId(JwtEncodingContext context) {
         AtomicReference<String> requestId = new AtomicReference<>();
         context.getClaims().claims(claims -> requestId.set((String) claims.get(IdTokenClaimNames.SUB)));
-        return requestId.get();
+        String id = requestId.get();
+        if (id != null) {
+            return new String(Base64.getDecoder().decode(id));
+        }
+        return null;
     }
 
 }

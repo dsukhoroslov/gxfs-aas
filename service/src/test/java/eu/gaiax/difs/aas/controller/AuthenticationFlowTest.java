@@ -98,7 +98,8 @@ public class AuthenticationFlowTest {
         ((LocalTrustServiceClientImpl) trustServiceClient).setStatusConfig(TrustServicePolicy.GET_LOGIN_PROOF_RESULT, ACCEPTED);
 
         Map<String, Object> claims = getAuthClaims("openid", "HAQlByTNfgFLmnoY38xP9pb8qZtZGu2aBEyBao8ezkE.bLmqaatm4kw.demo-app", "code", "aas-app-oidc",
-                keycloakUri + "/realms/gaia-x/broker/ssi-oidc/endpoint", "fXCqL9w6_Daqmibe5nD7Rg", "OIDC", "secret", null, s -> "uri://" + s, null);
+                keycloakUri + "/realms/gaia-x/broker/ssi-oidc/endpoint", "fXCqL9w6_Daqmibe5nD7Rg", "OIDC", "secret", null, 
+                rid -> "uri://" + new String(Base64.getDecoder().decode(rid)), null);
 
         // check claims..
         assertNotNull(claims.get(IdTokenClaimNames.ISS));
@@ -117,7 +118,7 @@ public class AuthenticationFlowTest {
 
         Map<String, Object> userInfo = getUserInfo((String) claims.get(OAuth2ParameterNames.ACCESS_TOKEN));
         assertEquals(claims.get(IdTokenClaimNames.ISS), userInfo.get(IdTokenClaimNames.ISS));
-        assertEquals(claims.get(IdTokenClaimNames.SUB), userInfo.get(IdTokenClaimNames.SUB));
+        assertEquals(new String(Base64.getDecoder().decode((String) claims.get(IdTokenClaimNames.SUB))), userInfo.get(IdTokenClaimNames.SUB));
     }
 
     @Test
@@ -126,15 +127,16 @@ public class AuthenticationFlowTest {
         ((LocalTrustServiceClientImpl) trustServiceClient).setStatusConfig(TrustServicePolicy.GET_LOGIN_PROOF_RESULT, ACCEPTED);
 
         Map<String, Object> claims = getAuthClaims("openid", "HAQlByTNfgFLmnoY38xP9pb8qZtZGu2aBEyBao8ezkE.bLmqaatm4kw.demo-app", "code", "aas-app-oidc",
-                keycloakUri + "/realms/gaia-x/broker/ssi-oidc/endpoint", "fXCqL9w6_Daqmibe5nD7Rg", "OIDC", "secret", null, s -> "uri://" + s, null);
+                keycloakUri + "/realms/gaia-x/broker/ssi-oidc/endpoint", "fXCqL9w6_Daqmibe5nD7Rg", "OIDC", "secret", null, 
+                rid -> "uri://" + new String(Base64.getDecoder().decode(rid)), null);
 
         String token = (String) claims.get(OAuth2ParameterNames.ACCESS_TOKEN);
 
         Map<String, Object> claims2 = getAuthClaims("openid", "HAQlByTNfgFLmnoY38xP9pb8qZtZGu2aBEyBao8ezkE.bLmqaatm4kw.demo-app", "code", "aas-app-oidc",
                 keycloakUri + "/realms/gaia-x/broker/ssi-oidc/endpoint", "fXCqL9w6_Daqmibe5nD7Rg", "OIDC", "secret", Map.of("max_age", 10, "id_token_hint", token), 
-                s -> "uri://" + s, null);
+                rid -> "uri://" + new String(Base64.getDecoder().decode(rid)), null);
         
-        assertEquals(claims.get(IdTokenClaimNames.SUB), claims2.get(IdTokenClaimNames.SUB));
+        assertEquals(claims.get(IdTokenClaimNames.SUB), new String(Base64.getDecoder().decode((String) claims2.get(IdTokenClaimNames.SUB))));
         Long iat = ((Date) claims.get(IdTokenClaimNames.IAT)).toInstant().getEpochSecond();
         Long authTime = (Long) claims2.get(IdTokenClaimNames.AUTH_TIME);
         assertTrue((authTime - iat) >= 0);
@@ -147,7 +149,8 @@ public class AuthenticationFlowTest {
         ((LocalTrustServiceClientImpl) trustServiceClient).setStatusConfig(TrustServicePolicy.GET_LOGIN_PROOF_RESULT, ACCEPTED);
 
         Map<String, Object> claims = getAuthClaims("openid profile email", "some.state", "code", "aas-app-oidc",
-                keycloakUri + "/realms/gaia-x/broker/ssi-oidc/endpoint", "some-nonce", "OIDC", "secret", Map.of("max_age", 1), s -> "uri://" + s, null);
+                keycloakUri + "/realms/gaia-x/broker/ssi-oidc/endpoint", "some-nonce", "OIDC", "secret", Map.of("max_age", 1), 
+                rid -> "uri://" + new String(Base64.getDecoder().decode(rid)), null);
         
         // check claims..
         assertNotNull(claims.get(IdTokenClaimNames.ISS));
@@ -166,7 +169,7 @@ public class AuthenticationFlowTest {
 
         Map<String, Object> userInfo = getUserInfo((String) claims.get(OAuth2ParameterNames.ACCESS_TOKEN));
         assertEquals(claims.get(IdTokenClaimNames.ISS), userInfo.get(IdTokenClaimNames.ISS));
-        assertEquals(claims.get(IdTokenClaimNames.SUB), userInfo.get(IdTokenClaimNames.SUB));
+        assertEquals(new String(Base64.getDecoder().decode((String) claims.get(IdTokenClaimNames.SUB))), userInfo.get(IdTokenClaimNames.SUB));
         assertNotNull(userInfo.get(IdTokenClaimNames.AUTH_TIME));
         assertNotNull(userInfo.get(StandardClaimNames.NAME));
         assertNotNull(userInfo.get(StandardClaimNames.GIVEN_NAME));
@@ -188,7 +191,7 @@ public class AuthenticationFlowTest {
         Map<String, Object> claims = getAuthClaims("openid", "some.state", "code", "aas-app-oidc",
                 keycloakUri + "/realms/gaia-x/broker/ssi-oidc/endpoint", "some-nonce", "OIDC", "secret", 
                 Map.of("claims", "{\"userinfo\": {\"name\": {\"essential\": true}, \"email\": null}, \"id_token\": {\"auth_time\": {\"essential\": true}}}"), 
-                s -> "uri://" + s, null);
+                rid -> "uri://" + new String(Base64.getDecoder().decode(rid)), null);
 
         // check claims..
         assertNotNull(claims.get(IdTokenClaimNames.ISS));
@@ -199,7 +202,7 @@ public class AuthenticationFlowTest {
 
         Map<String, Object> userInfo = getUserInfo((String) claims.get(OAuth2ParameterNames.ACCESS_TOKEN));
         assertEquals(claims.get(IdTokenClaimNames.ISS), userInfo.get(IdTokenClaimNames.ISS));
-        assertEquals(claims.get(IdTokenClaimNames.SUB), userInfo.get(IdTokenClaimNames.SUB));
+        assertEquals(new String(Base64.getDecoder().decode((String) claims.get(IdTokenClaimNames.SUB))), userInfo.get(IdTokenClaimNames.SUB));
         assertNull(userInfo.get(IdTokenClaimNames.AUTH_TIME));
         assertNotNull(userInfo.get(StandardClaimNames.NAME));
         assertNotNull(userInfo.get(StandardClaimNames.EMAIL));
@@ -210,7 +213,7 @@ public class AuthenticationFlowTest {
         Map<String, Object> claims = getAuthClaims("openid", "QfjgI5XxMjNkvUU2f9sWQymGfKoaBr7Ro2jHprmBZrg.VTxL7FGKhi0.demo-app", "code", 
                 "aas-app-siop", keycloakUri + "/realms/gaia-x/broker/ssi-siop/endpoint", "Q5h3noccV6Hwb4pVHps41A", "SIOP", "secret2", null, rid -> 
                     "openid://?scope=openid&response_type=id_token&client_id=" + serverProps.getBaseUrl() + "&redirect_uri=" + serverProps.getBaseUrl() + 
-                    "/ssi/siop-callback&response_mode=post&nonce=" + rid, rid -> {
+                    "/ssi/siop-callback&response_mode=post&nonce=" + new String(Base64.getDecoder().decode(rid)), rid -> {
                         try {
                             Map<String, Object> params = new HashMap<>();
                             params.put(IdTokenClaimNames.ISS, "https://self-issued.me/v2");
@@ -252,7 +255,7 @@ public class AuthenticationFlowTest {
         Map<String, Object> claims = getAuthClaims("openid profile email", "QfjgI5XxMjNkvUU2f9sWQymGfKoaBr7Ro2jHprmBZrg.VTxL7FGKhi0.demo-app", "code", 
                 "aas-app-siop", keycloakUri + "/realms/gaia-x/broker/ssi-siop/endpoint", "Q5h3noccV6Hwb4pVHps41A", "SIOP", "secret2", null, rid -> 
                     "openid://?scope=openid profile email&response_type=id_token&client_id=" + serverProps.getBaseUrl() + "&redirect_uri=" + serverProps.getBaseUrl() + 
-                    "/ssi/siop-callback&response_mode=post&nonce=" + rid, rid -> {
+                    "/ssi/siop-callback&response_mode=post&nonce=" + new String(Base64.getDecoder().decode(rid)), rid -> {
                         try {
                             long stamp = System.currentTimeMillis();
                             Map<String, Object> params = new HashMap<>();
@@ -321,8 +324,8 @@ public class AuthenticationFlowTest {
         ((LocalTrustServiceClientImpl) trustServiceClient).setStatusConfig(TrustServicePolicy.GET_LOGIN_PROOF_RESULT, TIMED_OUT);
 
         MvcResult authResult = getAuthResult("openid", "HAQlByTNfgFLmnoY38xP9pb8qZtZGu2aBEyBao8ezkE.bLmqaatm4kw.demo-app", "code", "aas-app-oidc", 
-                keycloakUri + "/realms/gaia-x/broker/ssi-oidc/endpoint", "fXCqL9w6_Daqmibe5nD7Rg", "OIDC", null, s -> "uri://" + s, null, 
-                "/ssi/login?error=login_timed_out");
+                keycloakUri + "/realms/gaia-x/broker/ssi-oidc/endpoint", "fXCqL9w6_Daqmibe5nD7Rg", "OIDC", null, 
+                rid -> "uri://" + new String(Base64.getDecoder().decode(rid)), null, "/ssi/login?error=login_timed_out");
         assertNotNull(authResult.getRequest().getParameter(OAuth2ParameterNames.USERNAME));
         assertNotNull(authResult.getRequest().getParameter(OAuth2ParameterNames.PASSWORD));
     }
@@ -333,8 +336,8 @@ public class AuthenticationFlowTest {
         ((LocalTrustServiceClientImpl) trustServiceClient).setStatusConfig(TrustServicePolicy.GET_LOGIN_PROOF_RESULT, REJECTED);
 
         MvcResult authResult = getAuthResult("openid", "HAQlByTNfgFLmnoY38xP9pb8qZtZGu2aBEyBao8ezkE.bLmqaatm4kw.demo-app", "code", "aas-app-oidc", 
-                keycloakUri + "/realms/gaia-x/broker/ssi-oidc/endpoint", "fXCqL9w6_Daqmibe5nD7Rg", "OIDC", null, s -> "uri://" + s, null, 
-                "/ssi/login?error=login_rejected");
+                keycloakUri + "/realms/gaia-x/broker/ssi-oidc/endpoint", "fXCqL9w6_Daqmibe5nD7Rg", "OIDC", null, 
+                rid -> "uri://" + new String(Base64.getDecoder().decode(rid)), null, "/ssi/login?error=login_rejected");
         assertNotNull(authResult.getRequest().getParameter(OAuth2ParameterNames.USERNAME));
         assertNotNull(authResult.getRequest().getParameter(OAuth2ParameterNames.PASSWORD));
     }
@@ -365,7 +368,7 @@ public class AuthenticationFlowTest {
         MvcResult authResult = getAuthResult("openid", "QfjgI5XxMjNkvUU2f9sWQymGfKoaBr7Ro2jHprmBZrg.VTxL7FGKhi0.demo-app", "code", "aas-app-siop", 
                 keycloakUri + "/realms/gaia-x/broker/ssi-siop/endpoint", "Q5h3noccV6Hwb4pVHps41A", "SIOP", null, rid -> 
                     "openid://?scope=openid&response_type=id_token&client_id=" + serverProps.getBaseUrl() + "&redirect_uri=" + serverProps.getBaseUrl() + 
-                    "/ssi/siop-callback&response_mode=post&nonce=" + rid, null, "/ssi/login?error=server_error");
+                    "/ssi/siop-callback&response_mode=post&nonce=" + new String(Base64.getDecoder().decode(rid)), null, "/ssi/login?error=server_error");
         String requestId = authResult.getRequest().getParameter(OAuth2ParameterNames.USERNAME); 
         HttpSession session = authResult.getRequest().getSession(false);
         String reUrl = authResult.getResponse().getHeader("Location");

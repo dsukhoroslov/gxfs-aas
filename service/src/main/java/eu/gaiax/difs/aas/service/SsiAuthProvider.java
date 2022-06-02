@@ -2,6 +2,7 @@ package eu.gaiax.difs.aas.service;
 
 import static org.springframework.security.oauth2.core.OAuth2ErrorCodes.SERVER_ERROR;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +32,7 @@ public class SsiAuthProvider implements AuthenticationProvider {
         log.debug("authenticate.enter; got authentication: {}; {}", authentication, authentication.getCredentials());
 
         String requestId = (String) authentication.getPrincipal();
+        requestId = new String(Base64.getDecoder().decode(requestId));
         String authType = (String) authentication.getCredentials();
         boolean required = "OIDC".equals(authType);
         Map<String, Object> claims = ssiBrokerService.getUserClaims(requestId, required);

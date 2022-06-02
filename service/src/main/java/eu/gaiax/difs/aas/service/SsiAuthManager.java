@@ -1,5 +1,6 @@
 package eu.gaiax.difs.aas.service;
 
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +33,7 @@ public class SsiAuthManager implements AuthenticationManager {
         List<String> scopes = null;
         if (authentication instanceof OidcUserInfoAuthenticationToken) {
             requestId = ((JwtAuthenticationToken) authentication.getPrincipal()).getToken().getSubject();
+            requestId = new String(Base64.getDecoder().decode(requestId));
             scopes = ((JwtAuthenticationToken) authentication.getPrincipal()).getToken().getClaimAsStringList("scope");
         } else if (authentication instanceof BearerTokenAuthenticationToken) {
             requestId = ((BearerTokenAuthenticationToken) authentication).getName(); // .getToken();

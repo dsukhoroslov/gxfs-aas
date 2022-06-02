@@ -88,7 +88,7 @@ public class SsiBrokerService extends SsiClaimsService {
         // encode link otherwise it'll not pass security check
         String qrUrl = "/ssi/qr/" + Base64.getUrlEncoder().encodeToString(link.getBytes());
         model.put("qrUrl", qrUrl);
-        model.put(TrustServiceClient.PN_REQUEST_ID, requestId);
+        model.put(TrustServiceClient.PN_REQUEST_ID, Base64.getEncoder().encodeToString(requestId.getBytes()));
         model.put("loginType", "OIDC");
 
         log.debug("oidcAuthorize.exit; returning model: {}", model);
@@ -107,7 +107,7 @@ public class SsiBrokerService extends SsiClaimsService {
         
         String qrUrl = "/ssi/qr/" + Base64.getUrlEncoder().encodeToString(link.getBytes());
         model.put("qrUrl", qrUrl);
-        model.put(TrustServiceClient.PN_REQUEST_ID, requestId);
+        model.put(TrustServiceClient.PN_REQUEST_ID, Base64.getEncoder().encodeToString(requestId.toString().getBytes()));
         model.put("loginType", "SIOP");
 
         log.debug("siopAuthorize.exit; returning model: {}", model);
@@ -167,7 +167,8 @@ public class SsiBrokerService extends SsiClaimsService {
         String requestId = (String) response.get(IdTokenClaimNames.NONCE);
         if (requestId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_response: invalid nonce"); 
-        } 
+        }
+        requestId = new String(Base64.getDecoder().decode(requestId));
         Boolean valid = isValidRequest(requestId);
         if (valid == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_response: invalid nonce");
