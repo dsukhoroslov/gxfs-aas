@@ -41,6 +41,7 @@ cache:
   except:
     variables:
       - $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      - $CI_TASK == "helm_package" && $CHANNEL
 
 # Verify merge requests using JDK11
 verify:jdk11:
@@ -64,11 +65,14 @@ deploy:jdk11:
       
 sast:
   stage: deploy
+  except:
+    variables:
+      - $CI_TASK == "helm_package" && $CHANNEL
 include:
 - template: Security/SAST.gitlab-ci.yml
 
 helm_package:
-  stage: release
+  stage: deploy
   image: dtzar/helm-kubectl:3.10.1
   rules:
     - if: $CI_TASK == "helm_package" && $CHANNEL
