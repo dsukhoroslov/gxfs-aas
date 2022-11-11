@@ -65,9 +65,6 @@ deploy:jdk11:
       
 sast:
   stage: deploy
-  except:
-    variables:
-      - $CI_TASK == "helm_package" && $CHANNEL
 include:
 - template: Security/SAST.gitlab-ci.yml
 
