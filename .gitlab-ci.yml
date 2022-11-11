@@ -66,4 +66,16 @@ sast:
   stage: deploy
 include:
 - template: Security/SAST.gitlab-ci.yml
+
+helm_package:
+  stage: release
+  image: dtzar/helm-kubectl:3.10.1
+  rules:
+    - if: $CI_TASK == "helm_package" && $CHANNEL
+  script:
+    - helm dependency update deploy/helm/${CHANNEL}
+    - helm package deploy/helm/${CHANNEL} -d deploy/helm/package/${CHANNEL}
+    - export FILE_NAME=$(ls deploy/helm/package/${CHANNEL}/*.tgz)
+    - 'curl --request POST --user gitlab-ci-token:$CI_JOB_TOKEN --form "chart=@${FILE_NAME}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/api/${CHANNEL}/charts"'
+
       
