@@ -1,9 +1,9 @@
 apiVersion: v1
 appVersion: v1.0.0
 
-description: auth-server deployment
+description: aas deployment
 
-name: auth-server
+name: aas
 
 version: 1.0.0
 
