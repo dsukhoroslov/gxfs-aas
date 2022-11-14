@@ -9,5 +9,5 @@ version: 1.0.0
 
 dependencies:
   - name: library
-    version: 1.0.0
+    version: 1.0.1
     repository: "https://gitlab.com/api/v4/projects/40471958/packages/helm/stable/"
