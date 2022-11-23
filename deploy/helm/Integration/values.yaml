@@ -53,7 +53,16 @@ ingress:
   #      - aas.gxfs.dev
 
 config:
-  aasCacheTtl: 3m
-  aasTokenTtl: 3m
-  aasIamBaseUri: https://key-server.gxfs.dev
-  aasOidcIssuer: https://aas.gxfs.dev
+  profile: test
+
+properties: 
+  spring.application.name: aas-service
+  aas.oidc.issuer: http://127.0.0.1:9000
+  aas.token.ttl: 5m
+  aas.tsa.url: https://gaiax.vereign.com/tsa/policy
+  aas.tsa.delay: 5000 # in milliseconds
+  aas.tsa.duration: 300000 # in milliseconds
+  aas.iam.base-uri: http://127.0.0.1:9000
+  aas.iam.clients.oidc.id: gxfs-portal
+  aas.iam.clients.oidc.secret: "{noop}secret"
+  aas.iam.clients.oidc.redirect-uri: http://127.0.0.1:3000/
