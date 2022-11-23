@@ -65,4 +65,4 @@ properties:
   aas.iam.base-uri: http://127.0.0.1:9000
   aas.iam.clients.oidc.id: gxfs-portal
   aas.iam.clients.oidc.secret: "{noop}secret"
-  aas.iam.clients.oidc.redirect-uri: http://127.0.0.1:3000/
+  aas.iam.clients.oidc.redirect-uri.0: http://127.0.0.1:3000/
