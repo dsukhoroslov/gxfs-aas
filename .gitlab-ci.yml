@@ -81,7 +81,7 @@ helm_package:
 
 
 docker-build:
-  stage: docker
+  stage: build
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [ "" ]
