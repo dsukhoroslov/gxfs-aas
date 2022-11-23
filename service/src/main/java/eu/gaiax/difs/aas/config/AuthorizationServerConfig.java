@@ -32,6 +32,9 @@ import java.util.stream.Collectors;
 
 import eu.gaiax.difs.aas.properties.ClientsProperties;
 import eu.gaiax.difs.aas.properties.ClientsProperties.ClientProperties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -99,6 +102,7 @@ public class AuthorizationServerConfig {
     @Value("${aas.jwk.secret}")
     private String jwkSecret;
     
+    private static final Logger log = LoggerFactory.getLogger(AuthorizationServerConfig.class);
     private final ScopeProperties scopeProperties;
     private final ClientsProperties clientsProperties;
     
@@ -171,13 +175,14 @@ public class AuthorizationServerConfig {
     }
 
     private RegisteredClient prepareClient(ClientProperties client) {
+        log.debug("Client "+ client.getId() +" with redirectUris" + client.getRedirectUri().toString()+ " configured");
         return RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId(client.getId())
                 .clientSecret(client.getSecret())
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                .redirectUri(client.getRedirectUri())
+                .redirectUris(c->c.addAll(client.getRedirectUri()))
                 .scopes(c -> c.addAll(List.of(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL)))
                 .clientSettings(ClientSettings.builder()
                         .tokenEndpointAuthenticationSigningAlgorithm(SignatureAlgorithm.RS256)
