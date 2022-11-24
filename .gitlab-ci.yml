@@ -79,9 +79,27 @@ helm_package:
     - export FILE_NAME=$(ls deploy/helm/package/${CHANNEL}/*.tgz)
     - 'curl --request POST --user gitlab-ci-token:$CI_JOB_TOKEN --form "chart=@${FILE_NAME}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/api/${CHANNEL}/charts"'
 
+application-build:
+  stage: build
+  image:
+    name: registry.gitlab.com/gaia-x/data-infrastructure-federation-services/por/demo/eclipse-temurin:11-jdk-alpine
+  artifacts:
+    paths:
+      - deploy/docker/output
+  only:
+    - main
+    - /^release\/\d*[.]\d*[.]\d*$/
+    - tags
+  script:
+    - mkdir -p deploy/docker/output
+    - rm -rf deploy/docker/output/*
+    - ./mvnw clean install -DskipTests
+    - cp ./target/*.jar deploy/docker/output/${CI_PROJECT_NAME}.jar
 
 docker-build:
   stage: build
+  dependencies:
+    - application-build
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [ "" ]
@@ -91,8 +109,6 @@ docker-build:
     - /^release\/\d*[.]\d*[.]\d*$/
     - tags
   script:
-    - mkdir -p service/output
-    - mvn build service/output/build
     - mkdir -p /kaniko/.docker
     - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
     - >-
