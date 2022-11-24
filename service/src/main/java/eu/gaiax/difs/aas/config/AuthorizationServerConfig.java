@@ -176,23 +176,46 @@ public class AuthorizationServerConfig {
 
     private RegisteredClient prepareClient(ClientProperties client) {
         log.debug("Client "+ client.getId() +" with redirectUris" + client.getRedirectUri().toString()+ " configured");
-        return RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId(client.getId())
-                .clientSecret(client.getSecret())
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                .redirectUris(c->c.addAll(client.getRedirectUri()))
-                .scopes(c -> c.addAll(List.of(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL)))
-                .clientSettings(ClientSettings.builder()
-                        .tokenEndpointAuthenticationSigningAlgorithm(SignatureAlgorithm.RS256)
-                        // maybe we'll use it later on..
-                        //.tokenEndpointAuthenticationSigningAlgorithm(MacAlgorithm.HS256)
-                        .build())
-                .tokenSettings(TokenSettings.builder()
-                        .accessTokenTimeToLive(tokenTtl)
-                        .build())
-                .build();
+        RegisteredClient regClient;
+        if(client.getSecret() == null || client.getSecret().isEmpty()){
+            log.debug("Client has no secret, configuring as PKCE client");
+            regClient = RegisteredClient.withId(UUID.randomUUID().toString())
+              .clientId(client.getId())
+              .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
+              .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+              .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+              .redirectUris(c->c.addAll(client.getRedirectUri()))
+              .scopes(c -> c.addAll(List.of(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL)))
+              .clientSettings(ClientSettings.builder()
+                .tokenEndpointAuthenticationSigningAlgorithm(SignatureAlgorithm.RS256)
+                // maybe we'll use it later on..
+                //.tokenEndpointAuthenticationSigningAlgorithm(MacAlgorithm.HS256)
+                .build())
+              .tokenSettings(TokenSettings.builder()
+                .accessTokenTimeToLive(tokenTtl)
+                .build())
+              .build();
+        } else {
+            log.debug("Client has a secret, configuring as secret basic client");
+            regClient = RegisteredClient.withId(UUID.randomUUID().toString())
+              .clientId(client.getId())
+              .clientSecret(client.getSecret())
+              .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+              .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+              .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+              .redirectUris(c->c.addAll(client.getRedirectUri()))
+              .scopes(c -> c.addAll(List.of(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL)))
+              .clientSettings(ClientSettings.builder()
+                .tokenEndpointAuthenticationSigningAlgorithm(SignatureAlgorithm.RS256)
+                // maybe we'll use it later on..
+                //.tokenEndpointAuthenticationSigningAlgorithm(MacAlgorithm.HS256)
+                .build())
+              .tokenSettings(TokenSettings.builder()
+                .accessTokenTimeToLive(tokenTtl)
+                .build())
+              .build();
+        }
+        return regClient;
     }
 
     @Bean
