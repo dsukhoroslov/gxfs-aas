@@ -4,8 +4,8 @@ stages:
   - deploy
 
 variables:
-  REGISTRY_PATH: ${CI_REGISTRY}/gaia-x/data-infrastructure-federation-services/aas
-  IMAGE_NAME: ${CI_PROJECT_NAME}/aas-${CI_PROJECT_NAME}
+  REGISTRY_PATH: ${CI_REGISTRY}/gaia-x/data-infrastructure-federation-services/
+  IMAGE_NAME: ${CI_PROJECT_NAME}
   TAG: ${CI_PIPELINE_ID}
 
 application-build:
