@@ -92,7 +92,7 @@ docker-build:
     - tags
   script:
     - mkdir -p service/output
-    - - mkdir -p service/output/build
+    - mkdir -p service/output/build
     - mv build service/output/build
     - mkdir -p /kaniko/.docker
     - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
