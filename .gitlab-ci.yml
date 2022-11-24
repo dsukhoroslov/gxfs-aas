@@ -5,8 +5,8 @@ stages:
 
 variables:
   REGISTRY_PATH: ${CI_REGISTRY}/gaia-x/data-infrastructure-federation-services
-  IMAGE_NAME: ${CI_PROJECT_NAME}
-  TAG: ${CI_PIPELINE_ID}
+  IMAGE_NAME: ${CI_PROJECT_NAME}/auth-service-image
+  TAG: latest
 
 application-build:
   stage: build
