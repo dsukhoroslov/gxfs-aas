@@ -43,7 +43,7 @@ docker-build:
     - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
     - >-
       /kaniko/executor
-      --context "${CI_PROJECT_DIR}/service"
+      --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/service/Dockerfile"
       --destination "${REGISTRY_PATH}/${IMAGE_NAME}:${TAG}"
 
