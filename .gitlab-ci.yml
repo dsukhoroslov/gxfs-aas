@@ -87,6 +87,7 @@ application-build:
     paths:
       - deploy/docker/output
   only:
+    - integration
     - main
     - /^release\/\d*[.]\d*[.]\d*$/
     - tags
