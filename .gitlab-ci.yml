@@ -23,7 +23,6 @@ application-build:
   script:
     - cd service
     - mkdir -p deploy/docker/output
-    - rm -rf deploy/docker/output/*
     - mvn clean install -DskipTests
     - cp ./target/*.jar deploy/docker/output/${CI_PROJECT_NAME}.jar
 
