@@ -6,7 +6,7 @@ stages:
 variables:
   REGISTRY_PATH: ${CI_REGISTRY}/gaia-x/data-infrastructure-federation-services
   IMAGE_NAME: ${CI_PROJECT_NAME}/auth-service-image
-  TAG: latest
+  TAG: ${CI_PIPELINE_ID}
 
 application-build:
   stage: build
@@ -26,7 +26,7 @@ application-build:
     - mvn clean install -DskipTests
     - cp ./target/*.jar ../deploy/docker/output/${CI_PROJECT_NAME}.jar
 
-docker-build:
+docker-build-version:
   stage: docker
   dependencies:
     - application-build
@@ -46,6 +46,27 @@ docker-build:
       --context "${CI_PROJECT_DIR}/deploy/docker"
       --dockerfile "${CI_PROJECT_DIR}/deploy/docker/Dockerfile"
       --destination "${REGISTRY_PATH}/${IMAGE_NAME}:${TAG}"
+
+docker-build-latest:
+  stage: docker
+  dependencies:
+    - application-build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [ "" ]
+  only:
+    - integration
+    - main
+    - /^release\/\d*[.]\d*[.]\d*$/
+    - tags
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+    - >-
+      /kaniko/executor
+      --context "${CI_PROJECT_DIR}/deploy/docker"
+      --dockerfile "${CI_PROJECT_DIR}/deploy/docker/Dockerfile"
+      --destination "${REGISTRY_PATH}/${IMAGE_NAME}:latest"
 
 helm_package:
   stage: deploy
