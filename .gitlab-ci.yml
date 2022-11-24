@@ -82,7 +82,7 @@ helm_package:
 application-build:
   stage: build
   image:
-    name: registry.gitlab.com/gaia-x/data-infrastructure-federation-services/por/demo/eclipse-temurin:11-jdk-alpine
+    name: maven:3-jdk-11
   artifacts:
     paths:
       - deploy/docker/output
@@ -94,8 +94,7 @@ application-build:
   script:
     - mkdir -p deploy/docker/output
     - rm -rf deploy/docker/output/*
-    - chmod +x ./mvnw
-    - ./mvnw clean install -DskipTests
+    - mvn clean install -DskipTests
     - cp ./target/*.jar deploy/docker/output/${CI_PROJECT_NAME}.jar
 
 docker-build:
