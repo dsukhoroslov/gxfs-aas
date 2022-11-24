@@ -94,6 +94,7 @@ application-build:
   script:
     - mkdir -p deploy/docker/output
     - rm -rf deploy/docker/output/*
+    - chmod +x ./mvnw
     - ./mvnw clean install -DskipTests
     - cp ./target/*.jar deploy/docker/output/${CI_PROJECT_NAME}.jar
 
