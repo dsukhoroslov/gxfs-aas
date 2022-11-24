@@ -21,10 +21,10 @@ application-build:
     - /^release\/\d*[.]\d*[.]\d*$/
     - tags
   script:
-    - cd service
     - mkdir -p deploy/docker/output
+    - cd service
     - mvn clean install -DskipTests
-    - cp ./target/*.jar deploy/docker/output/${CI_PROJECT_NAME}.jar
+    - cp ./target/*.jar ../deploy/docker/output/${CI_PROJECT_NAME}.jar
 
 docker-build:
   stage: docker
