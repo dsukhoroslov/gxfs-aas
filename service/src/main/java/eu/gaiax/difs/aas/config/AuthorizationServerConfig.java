@@ -171,7 +171,7 @@ public class AuthorizationServerConfig {
 
         if(clients.size() == 0)
           {
-            log.debug(
+            log.info(
               "No Clients Registered! Check your configuration for errors if this is not intentional.");
           }
 
@@ -185,7 +185,7 @@ public class AuthorizationServerConfig {
     }
 
     private RegisteredClient prepareClient(ClientProperties client) {
-        log.debug(
+        log.info(
           "Client " + client.getId() + " with redirectUris" + client.getRedirectUri().toString() + " configured");
         RegisteredClient regClient;
         if (client.getSecret() == null || client.getSecret().isEmpty()) {
