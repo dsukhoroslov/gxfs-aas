@@ -56,8 +56,6 @@ config:
   profile: k8s
 
 properties: 
-  server:
-  port: 9000
   management:
     endpoints:
       web:
@@ -91,17 +89,6 @@ properties:
         dcr-uri: ${aas.iam.base-uri}/realms/gaia-x/clients-registrations/openid-connect
         redirect-uri: ${aas.oidc.issuer}/*
         secret: "{noop}iat"
-      clients:
-        oidc:
-          id: aas-app-oidc
-          secret: "{noop}secret"
-          redirect-uri:
-            - ${aas.iam.base-uri}/realms/gaia-x/broker/ssi-oidc/endpoint
-        siop:
-          id: aas-app-siop
-          secret: "{noop}secret2"
-          redirect-uri: 
-            - ${aas.iam.base-uri}/realms/gaia-x/broker/ssi-siop/endpoint
     jwk:
       length: 3072
       secret: 96ec048e-c640-4cfd-bc82-6571810a9d0f
