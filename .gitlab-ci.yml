@@ -13,7 +13,7 @@ variables:
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
   REGISTRY_PATH: ${CI_REGISTRY}/gaia-x/data-infrastructure-federation-services
   TAG: ${CI_PIPELINE_ID}
-  IMAGE_NAME: ${CI_PROJECT_NAME}/auth-service-image:${TAG}
+  IMAGE_NAME: auth-service-image:${TAG}
 
 # Cache downloaded dependencies and plugins between builds.
 # To keep cache across branches add 'key: "$CI_JOB_NAME"'
@@ -40,7 +40,7 @@ docker:
 #      fi
 #    - 'mvn $MAVEN_CLI_OPTS deploy -s ci_settings.xml'
     - 'mvn $MAVEN_CLI_OPTS compile jib:build'
-    - 'export IMAGE_NAME=${CI_PROJECT_NAME}/auth-service-image'
+    - 'export IMAGE_NAME=auth-service-image'
     - 'mvn $MAVEN_CLI_OPTS compile jib:build'
 
 sast:
