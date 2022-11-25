@@ -39,7 +39,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -164,10 +166,19 @@ public class AuthorizationServerConfig {
 
     @Bean
     public RegisteredClientRepository registeredClientRepository() {
+
+        Map<String,ClientProperties> clients = clientsProperties.getClients();
+
+        if(clients.size() == 0)
+          {
+            log.debug(
+              "No Clients Registered! Check your configuration for errors if this is not intentional.");
+          }
+
         return new InMemoryRegisteredClientRepository(
           //clientsProperties.getOidc()
           //clientsProperties.getSiop()
-          clientsProperties.getClients().values().stream().map(
+          clients.values().stream().map(
             cp -> prepareClient(cp)
           ).collect(Collectors.toList()));
 
