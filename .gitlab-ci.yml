@@ -12,7 +12,7 @@ variables:
   # `installAtEnd` and `deployAtEnd` are only effective with recent version of the corresponding plugins.
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
   REGISTRY_PATH: ${CI_REGISTRY}/gaia-x/data-infrastructure-federation-services
-  TAG: ${CI_PIPELINE_ID}
+  TAG: ${CI_COMMIT_BRANCH}-${CI_PIPELINE_ID}
   IMAGE_NAME: auth-service-image:${TAG}
 
 # Cache downloaded dependencies and plugins between builds.
