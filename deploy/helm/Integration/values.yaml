@@ -53,7 +53,7 @@ ingress:
   #      - aas.gxfs.dev
 
 config:
-  profile: k8s
+  profile: prod
 
 properties: 
   management:
