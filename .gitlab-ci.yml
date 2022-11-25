@@ -27,6 +27,8 @@ cache:
 # For `master` branch run `mvn deploy` automatically. Considering this: https://phauer.com/2019/no-fat-jar-in-docker-image/
 docker:
   stage: deploy
+  image:
+    name: maven:3-jdk-11
   only:
     - integration
     - main
