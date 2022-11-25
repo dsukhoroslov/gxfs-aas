@@ -178,7 +178,7 @@ public class AuthorizationServerConfig {
         return new InMemoryRegisteredClientRepository(
           //clientsProperties.getOidc()
           //clientsProperties.getSiop()
-          clients.values().stream().map(
+          clients.values().stream().filter(x -> x!=null).map(
             cp -> prepareClient(cp)
           ).collect(Collectors.toList()));
 
