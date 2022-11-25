@@ -57,7 +57,7 @@ spec:
                     key: jwk
             volumeMounts:
               - name: application-config 
-                mountPath: "/config" 
+                mountPath: "/app/resources" 
                 readOnly: true
             ports:
               - name: "http"

@@ -6,5 +6,5 @@ metadata:
   labels:
     {{- include "app.labels" . | nindent 4 }}
 data:
-   application.properties: | 
+   application-k8s.yml: | 
             {{- toYaml .Values.properties | nindent 5}}
