@@ -64,6 +64,7 @@
         <repository.path>gaia-x/data-infrastructure-federation-services/authenticationauthorization</repository.path>
         <!--jib-->
         <ci-registry>${env.CI_REGISTRY}/${repository.path}</ci-registry>
+        <imagename>${env.IMAGE_NAME}</imagename>
     </properties>
 
     <url>https://gitlab.com/${repository.path}</url>
@@ -258,7 +259,7 @@
                 <artifactId>jib-maven-plugin</artifactId>
                 <configuration>
                     <to>
-                        <image>${ci-registry}/${project.name}-image</image>
+                        <image>${ci-registry}/${imagename}</image>
                         <auth>
                             <username>${env.CI_REGISTRY_USER}</username>
                             <password>${env.CI_REGISTRY_PASSWORD}</password>
