@@ -165,14 +165,15 @@ public class AuthorizationServerConfig {
     }
 
     @Bean
-    public RegisteredClientRepository registeredClientRepository() {
+    public RegisteredClientRepository registeredClientRepository() throws Exception {
 
         Map<String,ClientProperties> clients = clientsProperties.getClients();
 
-        if(clients.size() == 0)
+        if(clients == null || clients.size() == 0)
           {
             log.info(
               "No Clients Registered! Check your configuration for errors if this is not intentional.");
+            throw new Exception("No Clients registered");
           }
 
         return new InMemoryRegisteredClientRepository(
