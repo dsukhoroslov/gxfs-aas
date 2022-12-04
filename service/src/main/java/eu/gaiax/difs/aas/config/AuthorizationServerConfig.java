@@ -186,9 +186,15 @@ public class AuthorizationServerConfig {
     }
 
     private RegisteredClient prepareClient(ClientProperties client) {
-        log.info(
-          "Client " + client.getId() + " with redirectUris" 
-          + client.getRedirectUri().toString() + " configured");
+        log.info( "Client " + client.getId() + "configured.");
+        if(client.getRedirectUri() == null)
+          log.info("No URIs configured.");
+        else {
+          log.info(
+            " with redirectUris" 
+            + client.getRedirectUri().toString() + " configured");
+        }
+        
         RegisteredClient regClient;
         if (client.getSecret() == null || client.getSecret().isEmpty()) {
             log.debug("Client has no secret, configuring as PKCE client");
