@@ -171,6 +171,10 @@ public class AuthorizationServerConfig {
 
         log.info("Amount of Clients: " + clients.size());
 
+        for(int x=0;x<clients.size();x++) {
+          log.info("Client:" + clients[x].getId() + " cl");
+        }
+
         if(clients == null || clients.size() == 0)
           {
             log.info(
@@ -182,9 +186,7 @@ public class AuthorizationServerConfig {
           //clientsProperties.getOidc()
           //clientsProperties.getSiop()
           clients.values().stream().filter(x -> x.getId() != null).map(
-            cp -> prepareClient(cp)
-          ).filter(x -> x != null)
-           .collect(Collectors.toList()));
+            cp -> prepareClient(cp)).collect(Collectors.toList()));
     }
 
     private RegisteredClient prepareClient(ClientProperties client) {
