@@ -171,8 +171,8 @@ public class AuthorizationServerConfig {
 
         log.info("Amount of Clients: " + clients.size());
 
-        for(int x=0;x<clients.size();x++) {
-          log.info("Client:" + clients[x].getId() + " cl");
+        for (Map.Entry<String,ClientProperties> item : clients.entrySet()) {
+           log.info("Client:" + item.getKey());
         }
 
         if(clients == null || clients.size() == 0)
