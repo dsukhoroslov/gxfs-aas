@@ -169,6 +169,8 @@ public class AuthorizationServerConfig {
 
         Map<String,ClientProperties> clients = clientsProperties.getClients();
 
+        log.info("Amount of Clients: " + clients.size());
+
         if(clients == null || clients.size() == 0)
           {
             log.info(
@@ -191,7 +193,7 @@ public class AuthorizationServerConfig {
         if(client.getId() == null) {
           return null; 
         }
-        
+
         log.info(
           "Client " + client.getId() + " with redirectUris" + client.getRedirectUri().toString() + " configured");
         RegisteredClient regClient;
