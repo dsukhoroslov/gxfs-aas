@@ -170,7 +170,6 @@ public class AuthorizationServerConfig {
         Map<String,ClientProperties> clients = clientsProperties.getClients();
 
         log.info("Amount of Clients: " + clients.size());
-        log.info(clients);
 
         if(clients == null || clients.size() == 0)
           {
@@ -186,7 +185,6 @@ public class AuthorizationServerConfig {
             cp -> prepareClient(cp)
           ).filter(x -> x != null)
            .collect(Collectors.toList()));
-
     }
 
     private RegisteredClient prepareClient(ClientProperties client) {
