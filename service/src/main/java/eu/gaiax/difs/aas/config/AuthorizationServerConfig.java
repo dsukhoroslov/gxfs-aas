@@ -172,7 +172,10 @@ public class AuthorizationServerConfig {
         log.info("Amount of Clients: " + clients.size());
 
         for (Map.Entry<String,ClientProperties> item : clients.entrySet()) {
-           log.info("Client:" + item.getKey());
+           log.info("Client " + item.getKey() +" found");
+           if(item.getValue().getId() == null) {
+            log.info("Client " + item.getKey() +" filtered out.");
+           }
         }
 
         if(clients == null || clients.size() == 0)
