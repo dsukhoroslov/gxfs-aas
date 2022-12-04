@@ -170,6 +170,7 @@ public class AuthorizationServerConfig {
         Map<String,ClientProperties> clients = clientsProperties.getClients();
 
         log.info("Amount of Clients: " + clients.size());
+        log.info(clients);
 
         if(clients == null || clients.size() == 0)
           {
@@ -181,7 +182,7 @@ public class AuthorizationServerConfig {
         return new InMemoryRegisteredClientRepository(
           //clientsProperties.getOidc()
           //clientsProperties.getSiop()
-          clients.values().stream().map(
+          clients.values().stream().filter(x -> x.getId() != null).map(
             cp -> prepareClient(cp)
           ).filter(x -> x != null)
            .collect(Collectors.toList()));
@@ -189,11 +190,6 @@ public class AuthorizationServerConfig {
     }
 
     private RegisteredClient prepareClient(ClientProperties client) {
-
-        if(client.getId() == null) {
-          return null; 
-        }
-
         log.info(
           "Client " + client.getId() + " with redirectUris" + client.getRedirectUri().toString() + " configured");
         RegisteredClient regClient;
