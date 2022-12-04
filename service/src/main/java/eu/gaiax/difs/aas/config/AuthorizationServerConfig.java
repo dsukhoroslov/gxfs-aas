@@ -179,22 +179,21 @@ public class AuthorizationServerConfig {
         return new InMemoryRegisteredClientRepository(
           //clientsProperties.getOidc()
           //clientsProperties.getSiop()
-          clients.values().stream().filter(x -> x!=null).map(
+          clients.values().stream().map(
             cp -> prepareClient(cp)
-          ).collect(Collectors.toList()));
+          ).filter(x -> x != null)
+           .collect(Collectors.toList()));
 
     }
 
     private RegisteredClient prepareClient(ClientProperties client) {
-        log.info( "Client " + client.getId() + "configured.");
-        if(client.getRedirectUri() == null)
-          log.info("No URIs configured.");
-        else {
-          log.info(
-            " with redirectUris" 
-            + client.getRedirectUri().toString() + " configured");
+
+        if(client.getId() == null) {
+          return null; 
         }
         
+        log.info(
+          "Client " + client.getId() + " with redirectUris" + client.getRedirectUri().toString() + " configured");
         RegisteredClient regClient;
         if (client.getSecret() == null || client.getSecret().isEmpty()) {
             log.debug("Client has no secret, configuring as PKCE client");
