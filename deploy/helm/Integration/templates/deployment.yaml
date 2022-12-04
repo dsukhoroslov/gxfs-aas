@@ -55,10 +55,11 @@ spec:
                   secretKeyRef:
                     name: {{ include "app.fullname" . }}-auth-server-keys-secret
                     key: jwk
-            volumeMounts:
-              - name: application-config 
-                mountPath: "/app/resources" 
-                readOnly: true
+              - name: SPRING_APPLICATION_JSON
+                valueFrom:
+                  configMapKeyRef:
+                    name: {{ include "app.fullname" . }}-spring-config
+                    key: application.json
             ports:
               - name: "http"
                 containerPort: {{ .Values.server.http.port }}
@@ -72,8 +73,4 @@ spec:
             resources:
               {{- toYaml .Values.resources | nindent 14 }}
             {{- end }}
-      volumes:
-      - name: application-config
-        configMap:
-          name: {{ include "app.fullname" . }}-spring-app-config
       restartPolicy: Always

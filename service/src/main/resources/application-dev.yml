@@ -43,7 +43,7 @@ aas:
       secret: "{noop}iat"
     clients:
        c:
-         id: aas-app-oidc444
+         id: aas-app-oidc
          secret: "{noop}secret"
          redirect-uri:
            - ${aas.iam.base-uri}/realms/gaia-x/broker/ssi-oidc/endpoint
