@@ -324,12 +324,18 @@ public class SsiBrokerService extends SsiClaimsService {
             log.warn("getUserClaims; no claims found for request: {}, required: {}", requestId, required);
             if (required) {
                 userClaims = loadTrustedClaims(GET_LOGIN_PROOF_RESULT, requestId);
+               
+                if (userClaims == null) return null;
+
                 addAuthData(requestId, userClaims);
             }
         } else if (!(userClaims.containsKey(IdTokenClaimNames.SUB) || userClaims.containsKey(OAuth2ParameterNames.ERROR) ||
                 userClaims.containsKey(StandardClaimNames.NAME) || userClaims.containsKey(StandardClaimNames.EMAIL))) {
             if (required) {
                 userClaims = loadTrustedClaims(GET_LOGIN_PROOF_RESULT, requestId);
+
+                if(userClaims == null) return null;
+
                 addAuthData(requestId, userClaims);
             } else {
                 userClaims = null;

@@ -54,22 +54,18 @@ public abstract class SsiClaimsService {
                 //log.error("loadTrustedClaims; unknown response status: {}", o);
                 throw new OAuth2AuthenticationException(SERVER_ERROR);
             }
-            return evaluation;
-           /*  switch ((AccessRequestStatusDto) o) {
+
+            switch ((AccessRequestStatusDto) o) {
                 case ACCEPTED:
                     return evaluation;
                 case PENDING:
-                    delayNextRequest();
-                    break;
+                    return null;
                 case REJECTED:
                     throw new OAuth2AuthenticationException(LOGIN_REJECTED);
                 case TIMED_OUT:
                     throw new OAuth2AuthenticationException(LOGIN_TIMED_OUT);
-            }*/
-       // }
-
-        //log.error("loadTrustedClaims; Time for calling TrustServiceClient expired, time spent: {} ms", requestingStart.until(LocalTime.now(), MILLIS));
-       // throw new OAuth2AuthenticationException(LOGIN_TIMED_OUT);
+            }
+            return null;
     }
     
     private void delayNextRequest() {
