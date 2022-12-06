@@ -100,7 +100,11 @@ public final class SsiOidcProviderConfigurationEndpointFilter extends OncePerReq
     }
 
     private Consumer<List<String>> clientAuthenticationMethods() {
-        return (authenticationMethods) -> authenticationMethods.add(ClientAuthenticationMethod.CLIENT_SECRET_BASIC.getValue());
+        
+        return (authenticationMethods) -> { 
+                                                authenticationMethods.add(ClientAuthenticationMethod.CLIENT_SECRET_BASIC.getValue());
+                                                authenticationMethods.add(ClientAuthenticationMethod.NONE.getValue());
+                                          };
     }
 
     private Consumer<List<String>> oidcScopes() {
