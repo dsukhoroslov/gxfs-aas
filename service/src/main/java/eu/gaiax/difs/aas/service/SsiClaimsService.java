@@ -45,8 +45,8 @@ public abstract class SsiClaimsService {
     }
     
     protected Map<String, Object> loadTrustedClaims(String policy, String requestId) {
-        Instant finish = Instant.now().plusNanos(1_000_000 * duration);
-        while (Instant.now().isBefore(finish)) {
+       // Instant finish = Instant.now().plusNanos(1_000_000 * duration);
+        //while (Instant.now().isBefore(finish)) {
             Map<String, Object> evaluation = trustServiceClient.evaluate(policy, Map.of(TrustServiceClient.PN_REQUEST_ID, requestId));
 
             Object o = evaluation.get(TrustServiceClient.PN_STATUS);
@@ -54,8 +54,8 @@ public abstract class SsiClaimsService {
                 //log.error("loadTrustedClaims; unknown response status: {}", o);
                 throw new OAuth2AuthenticationException(SERVER_ERROR);
             }
-
-            switch ((AccessRequestStatusDto) o) {
+            return evaluation;
+           /*  switch ((AccessRequestStatusDto) o) {
                 case ACCEPTED:
                     return evaluation;
                 case PENDING:
@@ -65,11 +65,11 @@ public abstract class SsiClaimsService {
                     throw new OAuth2AuthenticationException(LOGIN_REJECTED);
                 case TIMED_OUT:
                     throw new OAuth2AuthenticationException(LOGIN_TIMED_OUT);
-            }
-        }
+            }*/
+       // }
 
         //log.error("loadTrustedClaims; Time for calling TrustServiceClient expired, time spent: {} ms", requestingStart.until(LocalTime.now(), MILLIS));
-        throw new OAuth2AuthenticationException(LOGIN_TIMED_OUT);
+       // throw new OAuth2AuthenticationException(LOGIN_TIMED_OUT);
     }
     
     private void delayNextRequest() {

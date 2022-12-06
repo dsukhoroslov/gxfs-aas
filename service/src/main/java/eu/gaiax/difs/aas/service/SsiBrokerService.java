@@ -63,7 +63,7 @@ public class SsiBrokerService extends SsiClaimsService {
         this.scopeProperties = scopeProperties;
     }
     
-    public void oidcAuthorize(Map<String, Object> model) {
+    public String oidcAuthorize(Map<String, Object> model) {
         log.debug("oidcAuthorize.enter; got model: {}", model);
 
         Map<String, Object> params = new HashMap<>();
@@ -94,10 +94,10 @@ public class SsiBrokerService extends SsiClaimsService {
         model.put("loginType", "OIDC");
 
         log.debug("oidcAuthorize.exit; returning model: {}", model);
-        //return model;
+        return requestId;
     }
 
-    public void siopAuthorize(Map<String, Object> model) {
+    public String siopAuthorize(Map<String, Object> model) {
         log.debug("siopAuthorize.enter; got model: {}", model);
 
         Set<String> scopes = processScopes(model);
@@ -113,7 +113,7 @@ public class SsiBrokerService extends SsiClaimsService {
         model.put("loginType", "SIOP");
 
         log.debug("siopAuthorize.exit; returning model: {}", model);
-        //return model;
+        return requestId.toString();
     }
 
     private Set<String> processScopes(Map<String, Object> model) {

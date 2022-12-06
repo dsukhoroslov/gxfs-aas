@@ -65,7 +65,7 @@ public class SsiController {
             } else {
                 model.addAttribute(OAuth2ParameterNames.SCOPE, new String[] {OidcScopes.OPENID});
                 // assume OIDC client for now..
-                ssiBrokerService.oidcAuthorize(model.asMap());
+                request.getSession().setAttribute("requestId",ssiBrokerService.oidcAuthorize(model.asMap()));
                 return "login-template.html";
             }
         }
@@ -79,7 +79,7 @@ public class SsiController {
         String[] clientId = auth.getParameterValues(OAuth2ParameterNames.CLIENT_ID);
         if (clientId != null && clientId.length > 0) {
             if ("aas-app-siop".equals(clientId[0])) {
-                ssiBrokerService.siopAuthorize(model.asMap());
+                request.getSession().setAttribute("requestId",ssiBrokerService.siopAuthorize(model.asMap()));
             } else {
                 // we assume all other clients use OIDC protocol
                 String[] age = auth.getParameterValues("max_age");
@@ -95,7 +95,7 @@ public class SsiController {
                     }
                 }
  
-                ssiBrokerService.oidcAuthorize(model.asMap());
+               request.getSession().setAttribute("requestId",ssiBrokerService.oidcAuthorize(model.asMap()));
             }
             return "login-template.html";
         }
@@ -103,6 +103,21 @@ public class SsiController {
         throw new OAuth2AuthenticationException("unknown client: " + (clientId == null ? null : Arrays.toString(clientId)));
     }
     
+    @GetMapping(value = "/login/status")
+    public ResponseEntity loginStatus(HttpServletRequest request, Model model)
+    {    
+        String requestId = (String) request.getSession().getAttribute("requestId");
+
+        if(requestId == null) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        Map<String, Object> claims = ssiBrokerService.getUserClaims(requestId, true);
+        if (claims == null) {
+            log.debug("authenticate.error; no claims found for {}:{}", "OIDC", requestId);      
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        }
+        return new ResponseEntity<>(HttpStatus.FOUND);
+    }
+
     private String getErrorMessage(String errorCode, Locale locale) {
         ResourceBundle resourceBundle = ResourceBundle.getBundle("language/messages", locale);
         try {
