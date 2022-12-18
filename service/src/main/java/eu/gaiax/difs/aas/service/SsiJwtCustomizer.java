@@ -71,6 +71,12 @@ public class SsiJwtCustomizer implements OAuth2TokenCustomizer<JwtEncodingContex
         }
         List<String> claims = new ArrayList<>();
         context.getClaims().claims(c -> claims.addAll(c.keySet()));
+        Map<String, Object> userDetails = ssiBrokerService.getUserClaims(requestId,false); // required?
+        if (userDetails != null) {
+            for (Map.Entry<String, Object> e: userDetails.entrySet()) {
+                context.getClaims().claim(e.getKey(), e.getValue());
+            }
+        }
         log.debug("customize.exit; updated: {}, claims: {}, for request: {}", updated, claims, requestId);
     }
 
