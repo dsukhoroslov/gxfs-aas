@@ -93,7 +93,7 @@ public final class SsiOidcProviderConfigurationEndpointFilter extends OncePerReq
                 .build();
 
         ServletServerHttpResponse httpResponse = new ServletServerHttpResponse(response);
-        httpResponse.getHeaders().add("Access-Control-Allow-Origin", "https://integration.gxfs.dev");
+        httpResponse.getHeaders().add("Access-Control-Allow-Origin", "*");
         this.providerConfigurationHttpMessageConverter.write(providerConfiguration, MediaType.APPLICATION_JSON, httpResponse);
     }
 
