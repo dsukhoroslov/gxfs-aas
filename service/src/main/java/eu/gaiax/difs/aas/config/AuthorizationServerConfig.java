@@ -292,7 +292,7 @@ public class AuthorizationServerConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOriginPattern("integration.gxfs.dev");
+        config.addAllowedOriginPattern("https://integration.gxfs.dev");
         config.addAllowedHeader("*");
         config.addAllowedMethod("POST");
         config.addAllowedMethod("GET");
