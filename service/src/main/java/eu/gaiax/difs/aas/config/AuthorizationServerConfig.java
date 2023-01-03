@@ -295,6 +295,7 @@ public class AuthorizationServerConfig {
         config.addAllowedOriginPattern("*");
         config.addAllowedHeader("*");
         config.addAllowedMethod("POST");
+        config.addAllowedMethod("GET");
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
