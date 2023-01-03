@@ -28,6 +28,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import java.security.Principal;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -123,15 +124,20 @@ public class SsiController {
    @GetMapping(value = "/logout")
     public ResponseEntity logout(HttpServletRequest request) throws ServletException
     {   
-        String requestId = request.getUserPrincipal().getName();
-        log.debug("Request ID %s", requestId);
-        if (request != null)  {
-            log.debug("Clean Cache for User:" + requestId);
-            ssiBrokerService.ClearById(requestId);
-        }
-         
-        request.logout();
-        return new ResponseEntity<>(HttpStatus.OK);
+        Principal principal = request.getUserPrincipal();
+
+        if( principal != null ) {
+            String requestId = request.getUserPrincipal().getName();
+            log.debug("Request ID %s", requestId);
+            if (request != null)  {
+                log.debug("Clean Cache for User:" + requestId);
+                ssiBrokerService.ClearById(requestId);
+            }
+             
+            request.logout();
+            return new ResponseEntity<>(HttpStatus.OK); 
+        } else 
+           return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     private String getErrorMessage(String errorCode, Locale locale) {
