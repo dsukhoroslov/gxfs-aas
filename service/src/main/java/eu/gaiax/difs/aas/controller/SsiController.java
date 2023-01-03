@@ -118,7 +118,7 @@ public class SsiController {
         return new ResponseEntity<>(HttpStatus.FOUND);
     }
 
-    @GetMapping(value = "/logout")
+   /*@GetMapping(value = "/logout")
     public ResponseEntity logout(HttpServletRequest request, Model model)
     {    
         DefaultSavedRequest auth = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
@@ -132,7 +132,7 @@ public class SsiController {
         }
 
         return new ResponseEntity<>(HttpStatus.OK);
-    }
+    }*/
 
     private String getErrorMessage(String errorCode, Locale locale) {
         ResourceBundle resourceBundle = ResourceBundle.getBundle("language/messages", locale);
