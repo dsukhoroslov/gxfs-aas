@@ -68,6 +68,10 @@ public abstract class SsiClaimsService {
             return null;
     }
     
+    public void ClearById(String id) {
+        claimsCache.remove(id);
+    }
+
     private void delayNextRequest() {
         try {
             TimeUnit.MILLISECONDS.sleep(delay);

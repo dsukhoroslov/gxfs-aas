@@ -5,6 +5,7 @@ import com.nimbusds.jwt.JWTParser;
 
 import eu.gaiax.difs.aas.service.SsiBrokerService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import java.text.ParseException;
@@ -119,18 +121,16 @@ public class SsiController {
     }
 
    @GetMapping(value = "/logout")
-    public ResponseEntity logout(HttpServletRequest request, Model model)
-    {    
-        DefaultSavedRequest auth = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
-        String requestId = (String) request.getSession().getAttribute("requestId");
-        log.debug("Logout %s",requestId);
-        log.debug("Logout %s",request.getSession().getId());
-        if(auth != null || requestId != null) {
-            request.getSession().removeAttribute("SPRING_SECURITY_SAVED_REQUEST");
-            request.getSession().removeAttribute("requestId");
-            request.getSession().invalidate();
+    public ResponseEntity logout(HttpServletRequest request) throws ServletException
+    {   
+        String requestId = request.getUserPrincipal().getName();
+        log.debug("Request ID %s", requestId);
+        if (request != null)  {
+            log.debug("Clean Cache for User:" + requestId);
+            ssiBrokerService.ClearById(requestId);
         }
-
+         
+        request.logout();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
