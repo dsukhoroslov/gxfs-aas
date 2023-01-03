@@ -1,5 +1,6 @@
 package eu.gaiax.difs.aas.controller;
 
+import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
 
@@ -13,6 +14,7 @@ import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
@@ -124,10 +126,9 @@ public class SsiController {
    @GetMapping(value = "/logout")
     public ResponseEntity logout(HttpServletRequest request) throws ServletException
     {   
-        Principal principal = request.getUserPrincipal();
-
-        if( principal != null ) {
-            String requestId = request.getUserPrincipal().getName();
+        var auth =   SecurityContextHolder.getContext().getAuthentication();
+        if( auth != null ) {
+            String requestId = auth.getName();
             log.debug("Request ID %s", requestId);
             if (request != null)  {
                 log.debug("Clean Cache for User:" + requestId);
