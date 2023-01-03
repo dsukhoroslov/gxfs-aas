@@ -58,16 +58,16 @@ public class SsiController {
         }
         
         if (auth == null) {
-            String out = request.getParameter("logout");
-            if (out == null) {
+          //  String out = request.getParameter("logout");
+          //  if (out == null) {
                 model.addAttribute("errorMessage", getErrorMessage("sessionTimeout", locale));
                 return "login-template.html";
-            } else {
-                model.addAttribute(OAuth2ParameterNames.SCOPE, new String[] {OidcScopes.OPENID});
+            //} else {
+              /* model.addAttribute(OAuth2ParameterNames.SCOPE, new String[] {OidcScopes.OPENID});
                 // assume OIDC client for now..
                 request.getSession().setAttribute("requestId",ssiBrokerService.oidcAuthorize(model.asMap()));
-                return "login-template.html";
-            }
+                return "login-template.html";*/
+          //  }
         }
         
         model.addAttribute(OAuth2ParameterNames.SCOPE, auth.getParameterValues(OAuth2ParameterNames.SCOPE));
@@ -116,6 +116,18 @@ public class SsiController {
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         }
         return new ResponseEntity<>(HttpStatus.FOUND);
+    }
+
+    @GetMapping(value = "/logout")
+    public ResponseEntity logout(HttpServletRequest request, Model model)
+    {    
+        DefaultSavedRequest auth = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+
+        if(auth != null) {
+            request.getSession().removeAttribute("SPRING_SECURITY_SAVED_REQUEST");
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     private String getErrorMessage(String errorCode, Locale locale) {
