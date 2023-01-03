@@ -125,6 +125,8 @@ public class SsiController {
 
         if(auth != null) {
             request.getSession().removeAttribute("SPRING_SECURITY_SAVED_REQUEST");
+            request.getSession().removeAttribute("requestId");
+            request.getSession().invalidate();
         }
 
         return new ResponseEntity<>(HttpStatus.OK);
