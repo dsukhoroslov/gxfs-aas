@@ -76,8 +76,8 @@ public class SecurityConfig {
             .exceptionHandling()
                 .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
           .and()
-            .logout()
-                //.logoutSuccessUrl("/ssi/logout");
+            .logout().
+                logoutSuccessUrl("/ssi/logout")
             .invalidateHttpSession(true);
         return http.build();
     }

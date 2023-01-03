@@ -69,7 +69,7 @@ public class SsiController {
                 return "login-template.html";*/
           //  }
         }
-        
+        log.debug("Login %s",request.getSession().getId());
         model.addAttribute(OAuth2ParameterNames.SCOPE, auth.getParameterValues(OAuth2ParameterNames.SCOPE));
         String error = request.getParameter(OAuth2ParameterNames.ERROR);
         if (error != null) {
@@ -118,21 +118,21 @@ public class SsiController {
         return new ResponseEntity<>(HttpStatus.FOUND);
     }
 
-   /*@GetMapping(value = "/logout")
+   @GetMapping(value = "/logout")
     public ResponseEntity logout(HttpServletRequest request, Model model)
     {    
         DefaultSavedRequest auth = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
         String requestId = (String) request.getSession().getAttribute("requestId");
-
+        log.debug("Logout %s",requestId);
+        log.debug("Logout %s",request.getSession().getId());
         if(auth != null || requestId != null) {
-            log.debug("Logout %s",requestId);
             request.getSession().removeAttribute("SPRING_SECURITY_SAVED_REQUEST");
             request.getSession().removeAttribute("requestId");
             request.getSession().invalidate();
         }
 
         return new ResponseEntity<>(HttpStatus.OK);
-    }*/
+    }
 
     private String getErrorMessage(String errorCode, Locale locale) {
         ResourceBundle resourceBundle = ResourceBundle.getBundle("language/messages", locale);
