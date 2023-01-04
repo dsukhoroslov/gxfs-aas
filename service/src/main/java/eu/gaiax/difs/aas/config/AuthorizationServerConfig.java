@@ -293,6 +293,7 @@ public class AuthorizationServerConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.addAllowedOriginPattern("https://integration.gxfs.dev");
+        config.addAllowedOriginPattern("http://127.0.0.1:3000");
         config.addAllowedHeader("*");
         config.addAllowedMethod("POST");
         config.addAllowedMethod("GET");
