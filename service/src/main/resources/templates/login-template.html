@@ -89,11 +89,7 @@
 <script type="application/javascript">
     async function openApp(element) {
         try {
-            const response = await fetch(element.getAttribute("urlarg"),{redirect:"error"});
-            console.log(response.url)
-            var urlParams = new URLSearchParams(response.url);
-            console.log(response)
-            console.log(urlParams);
+            window.open(element.getAttribute("urlarg"), '_blank').focus();
         } catch (err) {
             console.log(err);
         }
