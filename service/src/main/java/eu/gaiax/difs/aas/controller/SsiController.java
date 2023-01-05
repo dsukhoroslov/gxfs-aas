@@ -63,16 +63,16 @@ public class SsiController {
         }
         
         if (auth == null) {
-          //  String out = request.getParameter("logout");
-          //  if (out == null) {
+            String out = request.getParameter("logout");
+            if (out == null) {
                 model.addAttribute("errorMessage", getErrorMessage("sessionTimeout", locale));
                 return "login-template.html";
-            //} else {
-              /* model.addAttribute(OAuth2ParameterNames.SCOPE, new String[] {OidcScopes.OPENID});
+            } else {
+                model.addAttribute(OAuth2ParameterNames.SCOPE, new String[] {OidcScopes.OPENID});
                 // assume OIDC client for now..
                 request.getSession().setAttribute("requestId",ssiBrokerService.oidcAuthorize(model.asMap()));
-                return "login-template.html";*/
-          //  }
+                return "login-template.html";
+            }
         }
         log.debug("Login %s",request.getSession().getId());
         model.addAttribute(OAuth2ParameterNames.SCOPE, auth.getParameterValues(OAuth2ParameterNames.SCOPE));
@@ -123,10 +123,10 @@ public class SsiController {
         return new ResponseEntity<>(HttpStatus.FOUND);
     }
 
-   @GetMapping(value = "/logout")
+  /* @GetMapping(value = "/logout")
     public ResponseEntity logout(HttpServletRequest request) throws ServletException
     {   
-        var auth =   SecurityContextHolder.getContext().getAuthentication();
+        var auth =  SecurityContextHolder.getContext().getAuthentication();
         if( auth != null ) {
             String requestId = auth.getName();
             log.debug("Request ID %s", requestId);
@@ -139,7 +139,7 @@ public class SsiController {
             return new ResponseEntity<>(HttpStatus.OK); 
         } else 
            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
+    }*/
 
     private String getErrorMessage(String errorCode, Locale locale) {
         ResourceBundle resourceBundle = ResourceBundle.getBundle("language/messages", locale);

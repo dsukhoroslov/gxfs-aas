@@ -40,6 +40,8 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
+import eu.gaiax.difs.aas.client.InvitationServiceClient;
+import eu.gaiax.difs.aas.client.RestInvitationServiceClientImpl;
 import eu.gaiax.difs.aas.client.TrustServiceClient;
 
 @Service
@@ -57,9 +59,10 @@ public class SsiBrokerService extends SsiClaimsService {
     private String siopIssuer;
 
     private final ScopeProperties scopeProperties;
-
-    public SsiBrokerService(TrustServiceClient trustServiceClient, ScopeProperties scopeProperties) {
+    private final InvitationServiceClient invitationClient;
+    public SsiBrokerService(TrustServiceClient trustServiceClient, ScopeProperties scopeProperties,InvitationServiceClient invitationService) {
         super(trustServiceClient);
+        invitationClient = invitationService;
         this.scopeProperties = scopeProperties;
     }
     
@@ -87,10 +90,13 @@ public class SsiBrokerService extends SsiClaimsService {
         Map<String, Object> data = initAuthRequest(requestId, scopes, "OIDC", link);
         log.debug("oidcAuthorize; OIDC request {} stored: {}", requestId, data);
 
+        String mobileUrl = invitationClient.getMobileInvitationUrl(link);
+        log.debug("URL translated in {} ", mobileUrl);
         // encode link otherwise it'll not pass security check
         String qrUrl = "/ssi/qr/" + Base64.getUrlEncoder().encodeToString(link.getBytes());
         model.put("qrUrl", qrUrl);
         model.put(TrustServiceClient.PN_REQUEST_ID, requestId);
+        model.put("mobileUrl", mobileUrl);
         model.put("loginType", "OIDC");
 
         log.debug("oidcAuthorize.exit; returning model: {}", model);
