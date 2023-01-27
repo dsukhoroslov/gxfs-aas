@@ -292,6 +292,8 @@ public class AuthorizationServerConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+     
+        config.addAllowedOriginPattern("https://fc-demo-server.gxfs.dev");
         config.addAllowedOriginPattern("https://integration.gxfs.dev");
         config.addAllowedOriginPattern("http://127.0.0.1:3000");
         config.addAllowedHeader("*");
