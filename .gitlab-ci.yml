@@ -37,6 +37,11 @@ cache:
 verify:jdk11:
   <<: *verify
 
+sast:
+  stage: build
+include:
+- template: Security/SAST.gitlab-ci.yml
+
 
 # To deploy packages from CI, create a ci_settings.xml file
 # For deploying packages to GitLab's Maven Repository: See https://docs.gitlab.com/ee/user/packages/maven_repository/index.html#create-maven-packages-with-gitlab-cicd for more details.
@@ -62,11 +67,6 @@ docker:
     - 'export IMAGE_NAME=auth-service-image'
     - 'mvn $MAVEN_CLI_OPTS compile jib:build'
       
-sast:
-  stage: deploy
-include:
-- template: Security/SAST.gitlab-ci.yml
-
 helm_package:
   stage: deploy
   image: dtzar/helm-kubectl:3.10.1
