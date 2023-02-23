@@ -44,7 +44,7 @@ verify:jdk11:
 # For `master` branch run `mvn deploy` automatically. Considering this: https://phauer.com/2019/no-fat-jar-in-docker-image/
 docker:
 #deploy:jdk11:
-#  stage: deploy
+  stage: docker
   only:
     - integration
     - main
