@@ -72,9 +72,9 @@ public class SecurityConfig {
           .and()
             .formLogin()
                 .failureHandler(ssiAuthenticationFailureHandler())
-          .and()
-            .exceptionHandling()
-                .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
+          //.and()
+          //  .exceptionHandling()
+          //      .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
           .and()
             .logout().
                 logoutSuccessUrl("/ssi/login?logout")

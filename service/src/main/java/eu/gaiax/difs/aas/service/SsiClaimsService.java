@@ -28,8 +28,6 @@ public abstract class SsiClaimsService {
     private long delay;
     @Value("${aas.tsa.duration}")
     private long duration;
-    @Value("${spring.profiles.active:default}")
-    private String activeProfile;
     
     protected final TrustServiceClient trustServiceClient;
     
@@ -44,9 +42,20 @@ public abstract class SsiClaimsService {
         claimsCache = new CaffeineDataCache<>(cacheSize, ttl, null); 
     }
     
+    protected Map<String, Object> getTrustedClaims(String policy, String requestId) {
+        Map<String, Object> evaluation = trustServiceClient.evaluate(policy, Map.of(TrustServiceClient.PN_REQUEST_ID, requestId));
+
+        Object o = evaluation.get(TrustServiceClient.PN_STATUS);
+        if (o == null || !(o instanceof AccessRequestStatusDto)) {
+            //log.error("loadTrustedClaims; unknown response status: {}", o);
+            throw new OAuth2AuthenticationException(SERVER_ERROR);
+        }
+        return evaluation;
+    }
+
     protected Map<String, Object> loadTrustedClaims(String policy, String requestId) {
-       // Instant finish = Instant.now().plusNanos(1_000_000 * duration);
-        //while (Instant.now().isBefore(finish)) {
+        Instant finish = Instant.now().plusNanos(1_000_000 * duration);
+        while (Instant.now().isBefore(finish)) {
             Map<String, Object> evaluation = trustServiceClient.evaluate(policy, Map.of(TrustServiceClient.PN_REQUEST_ID, requestId));
 
             Object o = evaluation.get(TrustServiceClient.PN_STATUS);
@@ -59,19 +68,17 @@ public abstract class SsiClaimsService {
                 case ACCEPTED:
                     return evaluation;
                 case PENDING:
-                    return null;
+                	delayNextRequest();
+                	break;
                 case REJECTED:
                     throw new OAuth2AuthenticationException(LOGIN_REJECTED);
                 case TIMED_OUT:
                     throw new OAuth2AuthenticationException(LOGIN_TIMED_OUT);
             }
-            return null;
+        }
+        throw new OAuth2AuthenticationException(LOGIN_TIMED_OUT);
     }
     
-    public void ClearById(String id) {
-        claimsCache.remove(id);
-    }
-
     private void delayNextRequest() {
         try {
             TimeUnit.MILLISECONDS.sleep(delay);

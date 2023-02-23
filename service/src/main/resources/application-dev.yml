@@ -4,10 +4,6 @@ server:
     session:
       timeout: 10m
   tomcat:
-#    accesslog:
-#      directory: /logs
-#      enabled: true
-#    connection-timeout: 60s
     mbeanregistry:
       enabled: true
 
@@ -32,9 +28,6 @@ aas:
   cache:
     size: 0
     ttl: 5m
-  jwk:
-      length: 3072
-      secret: 96ec048e-c640-4cfd-bc82-6571810a9d0f
   iam:
     base-uri: http://key-server:8080
     iat:
@@ -42,13 +35,31 @@ aas:
       redirect-uri: ${aas.oidc.issuer}/*
       secret: "{noop}iat"
     clients:
-       c:
+       oidc:
          id: aas-app-oidc
          secret: "{noop}secret"
-         redirect-uri:
+         redirect-uris: 
            - ${aas.iam.base-uri}/realms/gaia-x/broker/ssi-oidc/endpoint
-    length: 3072
-    secret: 96ec048e-c640-4cfd-bc82-6571810a9d0f
+       siop:
+         id: aas-app-siop
+         secret: "{noop}secret2"
+         redirect-uris: 
+           - ${aas.iam.base-uri}/realms/gaia-x/broker/ssi-siop/endpoint
+       gxfs:
+         id: gxfs-demo
+#         secret: "{noop}hmi-secret2"
+         redirect-uris: 
+           - https://demo.gxfs.dev
+       portal:
+         id: demo-portal
+         secret: "{noop}demo-portal"
+         redirect-uris: 
+           - https://fc-demo-server.gxfs.dev
+           - https://fc-server.gxfs.dev
+           - http://78.138.66.181:8088/*
+  jwk:
+      length: 3072
+      secret: 96ec048e-c640-4cfd-bc82-6571810a9d0f
   oidc:
     issuer: http://auth-server:8090
     static-scopes:

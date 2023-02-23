@@ -20,9 +20,7 @@ import com.nimbusds.jwt.proc.BadJWTException;
 import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
 
 import eu.gaiax.difs.aas.properties.ScopeProperties;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -41,13 +39,12 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
 import eu.gaiax.difs.aas.client.InvitationServiceClient;
-import eu.gaiax.difs.aas.client.RestInvitationServiceClientImpl;
 import eu.gaiax.difs.aas.client.TrustServiceClient;
+import eu.gaiax.difs.aas.generated.model.AccessRequestStatusDto;
 
+@Slf4j
 @Service
 public class SsiBrokerService extends SsiClaimsService {
-
-    private final static Logger log = LoggerFactory.getLogger(SsiBrokerService.class);
 
     @Value("${aas.oidc.issuer}")
     private String oidcIssuer;
@@ -60,10 +57,11 @@ public class SsiBrokerService extends SsiClaimsService {
 
     private final ScopeProperties scopeProperties;
     private final InvitationServiceClient invitationClient;
-    public SsiBrokerService(TrustServiceClient trustServiceClient, ScopeProperties scopeProperties,InvitationServiceClient invitationService) {
+    
+    public SsiBrokerService(TrustServiceClient trustServiceClient, ScopeProperties scopeProperties, InvitationServiceClient invitationService) {
         super(trustServiceClient);
-        invitationClient = invitationService;
         this.scopeProperties = scopeProperties;
+        this.invitationClient = invitationService;
     }
     
     public String oidcAuthorize(Map<String, Object> model) {
@@ -91,7 +89,7 @@ public class SsiBrokerService extends SsiClaimsService {
         log.debug("oidcAuthorize; OIDC request {} stored: {}", requestId, data);
 
         String mobileUrl = invitationClient.getMobileInvitationUrl(link);
-        log.debug("URL translated in {} ", mobileUrl);
+        log.debug("oidcAuthorize; mobile URL translated in {} ", mobileUrl);
         // encode link otherwise it'll not pass security check
         String qrUrl = "/ssi/qr/" + Base64.getUrlEncoder().encodeToString(link.getBytes());
         model.put("qrUrl", qrUrl);
@@ -108,9 +106,9 @@ public class SsiBrokerService extends SsiClaimsService {
 
         Set<String> scopes = processScopes(model);
 
-        UUID requestId = UUID.randomUUID();
+        String requestId = UUID.randomUUID().toString();
         String link = buildRequestString(scopes, requestId);
-        Map<String, Object> data = initAuthRequest(requestId.toString(), scopes, "SIOP", link);
+        Map<String, Object> data = initAuthRequest(requestId, scopes, "SIOP", link);
         log.debug("siopAuthorize; SIOP request {} stored: {}", requestId, data);
         
         String qrUrl = "/ssi/qr/" + Base64.getUrlEncoder().encodeToString(link.getBytes());
@@ -119,7 +117,7 @@ public class SsiBrokerService extends SsiClaimsService {
         model.put("loginType", "SIOP");
 
         log.debug("siopAuthorize.exit; returning model: {}", model);
-        return requestId.toString();
+        return requestId;
     }
 
     private Set<String> processScopes(Map<String, Object> model) {
@@ -144,7 +142,7 @@ public class SsiBrokerService extends SsiClaimsService {
         }
     }
 
-    private String buildRequestString(Set<String> scopes, UUID requestId) {
+    private String buildRequestString(Set<String> scopes, String requestId) {
         List<String> params = new ArrayList<>();
         params.add(OAuth2ParameterNames.SCOPE + "=" + String.join(" ", scopes));
         params.add(OAuth2ParameterNames.RESPONSE_TYPE + "=" + OidcParameterNames.ID_TOKEN);
@@ -284,19 +282,7 @@ public class SsiBrokerService extends SsiClaimsService {
     
     public Map<String, Object> getSubjectClaims(String subjectId, Collection<String> requestedScopes) {
         log.debug("getSubjectClaims.enter; got subject: {}, scopes: {}", subjectId, requestedScopes);
-        Map<String, Object> userClaims;
-        try {
-            userClaims = getUserClaims(subjectId, true, requestedScopes, null);
-        } catch (OAuth2AuthenticationException ex) {
-            userClaims = new HashMap<>();
-            userClaims.put(OAuth2ParameterNames.SCOPE, requestedScopes.toArray(new String[0]));
-            userClaims.put(IdTokenClaimNames.SUB, subjectId);
-            oidcAuthorize(userClaims);
-            String qrUrl = (String) userClaims.remove("qrUrl");
-            qrUrl = qrUrl.substring(8); // remove /ssi/qr/ prefix
-            String link = new String(Base64.getUrlDecoder().decode(qrUrl));
-            userClaims.put(TrustServiceClient.PN_LINK, link);
-        }
+        Map<String, Object> userClaims = getUserClaims(subjectId, true, requestedScopes, null);
         log.debug("getSubjectClaims.exit; returning: {}", userClaims == null ? null : userClaims.keySet());
         return userClaims;
     }
@@ -304,24 +290,11 @@ public class SsiBrokerService extends SsiClaimsService {
     public Map<String, Object> getUserClaims(String requestId, boolean required, Collection<String> requestedScopes, Collection<String> requestedClaims) {
         Map<String, Object> userClaims = getUserClaims(requestId, required);
         if (userClaims == null) {
-            log.debug("getUserClaims; no claims found, cache size is: {}", claimsCache.estimatedSize()); // .getAll());
+            log.debug("getUserClaims; no claims found, cache size is: {}", claimsCache.estimatedSize()); 
             return null;
         }
         
-        // return claims which corresponds to requested scopes only..
-        Set<String> scopedClaims;
-        if (requestedScopes == null) {
-            scopedClaims = new HashSet<>();
-        } else {
-            scopedClaims = scopeProperties.getScopes().entrySet().stream()
-                .filter(e -> requestedScopes.contains(e.getKey())).flatMap(e -> e.getValue().stream()).collect(Collectors.toSet());
-        }
-        if (requestedClaims != null) {
-            scopedClaims.addAll(requestedClaims);
-        }
-        return userClaims.entrySet().stream()
-                .filter(e -> e.getValue() != null && scopedClaims.contains(e.getKey()) && !e.getValue().toString().isEmpty())
-                .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+        return filterUserClaims(userClaims, requestedScopes, requestedClaims);
     }
     
     public Map<String, Object> getUserClaims(String requestId, boolean required) {
@@ -329,27 +302,25 @@ public class SsiBrokerService extends SsiClaimsService {
         if (userClaims == null) {
             log.warn("getUserClaims; no claims found for request: {}, required: {}", requestId, required);
             if (required) {
-                userClaims = loadTrustedClaims(GET_LOGIN_PROOF_RESULT, requestId);
-               
-                if (userClaims == null) return null;
-
-                addAuthData(requestId, userClaims);
+                userClaims = getTrustedClaims(GET_LOGIN_PROOF_RESULT, requestId);
             }
-        } else if (!(userClaims.containsKey(IdTokenClaimNames.SUB) || userClaims.containsKey(OAuth2ParameterNames.ERROR) ||
-                userClaims.containsKey(StandardClaimNames.NAME) || userClaims.containsKey(StandardClaimNames.EMAIL))) {
+        } else if (!((userClaims.containsKey(IdTokenClaimNames.SUB) || userClaims.containsKey(OAuth2ParameterNames.ERROR) ||
+                userClaims.containsKey(StandardClaimNames.NAME) || userClaims.containsKey(StandardClaimNames.EMAIL)))) {
             if (required) {
-                userClaims = loadTrustedClaims(GET_LOGIN_PROOF_RESULT, requestId);
-
-                if(userClaims == null) return null;
-
-                addAuthData(requestId, userClaims);
+                userClaims = getTrustedClaims(GET_LOGIN_PROOF_RESULT, requestId);
             } else {
                 userClaims = null;
             }
         }
+        if (userClaims != null) {
+            AccessRequestStatusDto sts = (AccessRequestStatusDto) userClaims.get(TrustServiceClient.PN_STATUS);
+            if (sts != AccessRequestStatusDto.PENDING) {
+            	addAuthData(requestId, userClaims);
+            }        	
+        }
         return userClaims;
     }
-
+    
     public Set<String> getUserScopes(String requestId) {
         Map<String, Object> userClaims = claimsCache.get(requestId);
         if (userClaims == null) {
@@ -378,6 +349,66 @@ public class SsiBrokerService extends SsiClaimsService {
             return null;
         }
         return new HashMap<>(params);
+    }
+
+    public Map<String, Object> loadSubjectClaims(String subjectId, Collection<String> requestedScopes) {
+        log.debug("getSubjectClaims.enter; got subject: {}, scopes: {}", subjectId, requestedScopes);
+        Map<String, Object> userClaims;
+        try {
+            userClaims = loadUserClaims(subjectId);
+            if (userClaims == null) {
+                log.debug("getUserClaims; no claims found, cache size is: {}", claimsCache.estimatedSize()); 
+            } else {            
+                userClaims = filterUserClaims(userClaims, requestedScopes, null);
+            }
+        } catch (OAuth2AuthenticationException ex) {
+            userClaims = new HashMap<>();
+            userClaims.put(OAuth2ParameterNames.SCOPE, requestedScopes.toArray(new String[0]));
+            userClaims.put(IdTokenClaimNames.SUB, subjectId);
+            oidcAuthorize(userClaims);
+            String qrUrl = (String) userClaims.remove("qrUrl");
+            qrUrl = qrUrl.substring(8); // remove /ssi/qr/ prefix
+            String link = new String(Base64.getUrlDecoder().decode(qrUrl));
+            userClaims.put(TrustServiceClient.PN_LINK, link);
+        }
+        log.debug("getSubjectClaims.exit; returning: {}", userClaims == null ? null : userClaims.keySet());
+        return userClaims;
+    }
+ 
+    private Map<String, Object> filterUserClaims(Map<String, Object> userClaims, Collection<String> requestedScopes, Collection<String> requestedClaims) {
+        // return claims which corresponds to requested scopes only..
+        Set<String> scopedClaims;
+        if (requestedScopes == null) {
+            scopedClaims = new HashSet<>();
+        } else {
+            scopedClaims = scopeProperties.getScopes().entrySet().stream()
+                .filter(e -> requestedScopes.contains(e.getKey())).flatMap(e -> e.getValue().stream()).collect(Collectors.toSet());
+        }
+        if (requestedClaims != null) {
+            scopedClaims.addAll(requestedClaims);
+        }
+        return userClaims.entrySet().stream()
+                .filter(e -> e.getValue() != null && scopedClaims.contains(e.getKey()) && !e.getValue().toString().isEmpty())
+                .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+    	
+    }
+
+    private Map<String, Object> loadUserClaims(String requestId) {
+        Map<String, Object> userClaims = claimsCache.get(requestId); 
+        if (userClaims == null) {
+            //log.warn("loadUserClaims; no claims found for request: {}, required: {}", requestId, required);
+            userClaims = loadTrustedClaims(GET_LOGIN_PROOF_RESULT, requestId);
+        } else if (!((userClaims.containsKey(IdTokenClaimNames.SUB) || userClaims.containsKey(OAuth2ParameterNames.ERROR) ||
+                userClaims.containsKey(StandardClaimNames.NAME) || userClaims.containsKey(StandardClaimNames.EMAIL)))) {
+            userClaims = loadTrustedClaims(GET_LOGIN_PROOF_RESULT, requestId);
+        }
+        if (userClaims != null) {
+            AccessRequestStatusDto sts = (AccessRequestStatusDto) userClaims.get(TrustServiceClient.PN_STATUS);
+            if (sts != AccessRequestStatusDto.PENDING) {
+            	addAuthData(requestId, userClaims);
+            }        	
+        }
+        return userClaims;
     }
     
 }

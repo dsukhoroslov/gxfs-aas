@@ -33,19 +33,18 @@ import eu.gaiax.difs.aas.properties.ClientsProperties.ClientProperties;
 import eu.gaiax.difs.aas.properties.ScopeProperties;
 import eu.gaiax.difs.aas.service.SsiAuthManager;
 import eu.gaiax.difs.aas.service.SsiAuthorizationService;
+import lombok.extern.slf4j.Slf4j;
+
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -84,6 +83,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 /**
  * The Spring Authorization Server config.
  */
+@Slf4j
 @Configuration
 public class AuthorizationServerConfig {
 
@@ -100,7 +100,6 @@ public class AuthorizationServerConfig {
     @Value("${aas.jwk.secret}")
     private String jwkSecret;
 
-    private static final Logger log = LoggerFactory.getLogger(AuthorizationServerConfig.class);
     private final ScopeProperties scopeProperties;
     private final ClientsProperties clientsProperties;
 
@@ -166,75 +165,49 @@ public class AuthorizationServerConfig {
 
     @Bean
     public RegisteredClientRepository registeredClientRepository() throws Exception {
-
-        Map<String,ClientProperties> clients = clientsProperties.getClients();
-
-        log.info("Amount of Clients: " + clients.size());
-
-        for (Map.Entry<String,ClientProperties> item : clients.entrySet()) {
-           log.info("Client " + item.getKey() +" found");
-           if(item.getValue().getId() == null) {
-            log.info("Client " + item.getKey() +" filtered out.");
-           }
-        }
-
-        if(clients == null || clients.size() == 0)
-          {
-            log.info(
-              "No Clients Registered! Check your configuration for errors if this is not intentional.");
+        Map<String, ClientProperties> clients = clientsProperties.getClients();
+        if (clients == null) {
+            log.error("registeredClientRepository.error. No Clients Registered! Check your configuration for errors if this is not intentional.");
             throw new Exception("No Clients registered");
-          }
-
-        return new InMemoryRegisteredClientRepository(
-          //clientsProperties.getOidc()
-          //clientsProperties.getSiop()
-          clients.values().stream().filter(x -> x.getId() != null).map(
-            cp -> prepareClient(cp)).collect(Collectors.toList()));
+        }
+        
+    	log.info("registeredClientRepository.enter; amount of configured clients: {}", clients.size());
+        List<RegisteredClient> accepted = clients.values().stream()
+        	.filter(cl -> cl.getId() != null)
+        	.map(cl -> prepareClient(cl))
+        	.collect(Collectors.toList());
+    	log.info("registeredClientRepository.exit; amount of accepted clients: {}", accepted.size());
+        return new InMemoryRegisteredClientRepository(accepted);
     }
 
     private RegisteredClient prepareClient(ClientProperties client) {
-        log.info(
-          "Client " + client.getId() + " with redirectUris" + client.getRedirectUri().toString() + " configured");
-        RegisteredClient regClient;
+    	log.debug("prepareClient.enter; client: {}", client);
+    	RegisteredClient.Builder rcBuilder = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId(client.getId())
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .redirectUris(c -> c.addAll(client.getRedirectUris()))
+                .scopes(c -> c.addAll(List.of(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL)))
+                .clientSettings(ClientSettings.builder()
+                	// can be used for PKCE, but not strictly required
+                	//.requireAuthorizationConsent(false) 
+                	//.requireProofKey(true)
+                      .tokenEndpointAuthenticationSigningAlgorithm(SignatureAlgorithm.RS256)
+                    // maybe we'll use it later on..
+                    //.tokenEndpointAuthenticationSigningAlgorithm(MacAlgorithm.HS256)
+                    .build())
+                .tokenSettings(TokenSettings.builder()
+                    .accessTokenTimeToLive(tokenTtl)
+                    .build());    	
         if (client.getSecret() == null || client.getSecret().isEmpty()) {
-            log.debug("Client has no secret, configuring as PKCE client");
-            regClient = RegisteredClient.withId(UUID.randomUUID().toString())
-              .clientId(client.getId())
-              .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
-              .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-              .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-              .redirectUris(c -> c.addAll(client.getRedirectUri()))
-              .scopes(c -> c.addAll(List.of(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL)))
-              .clientSettings(ClientSettings.builder()
-                .tokenEndpointAuthenticationSigningAlgorithm(SignatureAlgorithm.RS256)
-                // maybe we'll use it later on..
-                //.tokenEndpointAuthenticationSigningAlgorithm(MacAlgorithm.HS256)
-                .build())
-              .tokenSettings(TokenSettings.builder()
-                .accessTokenTimeToLive(tokenTtl)
-                .build())
-              .build();
+            rcBuilder = rcBuilder
+                .clientAuthenticationMethod(ClientAuthenticationMethod.NONE);
         } else {
-            log.debug("Client has a secret, configuring as secret basic client");
-            regClient = RegisteredClient.withId(UUID.randomUUID().toString())
-              .clientId(client.getId())
-              .clientSecret(client.getSecret())
-              .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-              .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-              .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-              .redirectUris(c -> c.addAll(client.getRedirectUri()))
-              .scopes(c -> c.addAll(List.of(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL)))
-              .clientSettings(ClientSettings.builder()
-                .tokenEndpointAuthenticationSigningAlgorithm(SignatureAlgorithm.RS256)
-                // maybe we'll use it later on..
-                //.tokenEndpointAuthenticationSigningAlgorithm(MacAlgorithm.HS256)
-                .build())
-              .tokenSettings(TokenSettings.builder()
-                .accessTokenTimeToLive(tokenTtl)
-                .build())
-              .build();
+            rcBuilder = rcBuilder
+                .clientSecret(client.getSecret())
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
         }
-        return regClient;
+        return rcBuilder.build();
     }
 
     @Bean
@@ -293,6 +266,7 @@ public class AuthorizationServerConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
      
+        // TODO: take CORS config from props. Or, can we use Clienmt's redirect-uris instead?
         config.addAllowedOriginPattern("https://fc-demo-server.gxfs.dev");
         config.addAllowedOriginPattern("https://integration.gxfs.dev");
         config.addAllowedOriginPattern("http://127.0.0.1:3000");
@@ -309,3 +283,4 @@ public class AuthorizationServerConfig {
     }
 
 }
+

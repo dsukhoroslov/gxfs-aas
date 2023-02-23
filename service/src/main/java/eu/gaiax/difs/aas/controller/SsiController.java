@@ -1,20 +1,19 @@
 package eu.gaiax.difs.aas.controller;
 
-import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
 
+import eu.gaiax.difs.aas.client.TrustServiceClient;
+import eu.gaiax.difs.aas.generated.model.AccessRequestStatusDto;
+import eu.gaiax.difs.aas.model.SsiAuthErrorCodes;
 import eu.gaiax.difs.aas.service.SsiBrokerService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
@@ -27,40 +26,29 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-import java.security.Principal;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/ssi")
 public class SsiController {
-    
-    private static final Logger log = LoggerFactory.getLogger(SsiController.class);
 
     private final SsiBrokerService ssiBrokerService;
 
     @GetMapping(value = "/login")
     public String login(HttpServletRequest request, Model model) {
         DefaultSavedRequest auth = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
-        String lang = request.getParameter("lang");
-        Locale locale; 
-        if (lang == null) {
-            locale = (Locale) request.getSession().getAttribute("session.current.locale");
-            if (locale == null) {
-                locale = request.getLocale();
-            }
-        } else {
-            locale = Locale.forLanguageTag(lang);
-        }
+        Locale locale = getLocale(request); 
         
         if (auth == null) {
             String out = request.getParameter("logout");
@@ -70,11 +58,11 @@ public class SsiController {
             } else {
                 model.addAttribute(OAuth2ParameterNames.SCOPE, new String[] {OidcScopes.OPENID});
                 // assume OIDC client for now..
-                request.getSession().setAttribute("requestId",ssiBrokerService.oidcAuthorize(model.asMap()));
+                request.getSession().setAttribute("requestId", ssiBrokerService.oidcAuthorize(model.asMap()));
                 return "login-template.html";
             }
         }
-        log.debug("Login %s",request.getSession().getId());
+        
         model.addAttribute(OAuth2ParameterNames.SCOPE, auth.getParameterValues(OAuth2ParameterNames.SCOPE));
         String error = request.getParameter(OAuth2ParameterNames.ERROR);
         if (error != null) {
@@ -84,7 +72,7 @@ public class SsiController {
         String[] clientId = auth.getParameterValues(OAuth2ParameterNames.CLIENT_ID);
         if (clientId != null && clientId.length > 0) {
             if ("aas-app-siop".equals(clientId[0])) {
-                request.getSession().setAttribute("requestId",ssiBrokerService.siopAuthorize(model.asMap()));
+                request.getSession().setAttribute("requestId", ssiBrokerService.siopAuthorize(model.asMap()));
             } else {
                 // we assume all other clients use OIDC protocol
                 String[] age = auth.getParameterValues("max_age");
@@ -100,7 +88,7 @@ public class SsiController {
                     }
                 }
  
-               request.getSession().setAttribute("requestId",ssiBrokerService.oidcAuthorize(model.asMap()));
+               request.getSession().setAttribute("requestId", ssiBrokerService.oidcAuthorize(model.asMap()));
             }
             return "login-template.html";
         }
@@ -109,18 +97,31 @@ public class SsiController {
     }
     
     @GetMapping(value = "/login/status")
-    public ResponseEntity loginStatus(HttpServletRequest request, Model model)
-    {    
+    public ResponseEntity<Void> loginStatus(HttpServletRequest request, HttpServletResponse response, Model model) {    
         String requestId = (String) request.getSession().getAttribute("requestId");
-
-        if(requestId == null) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (requestId == null) {
+        	return ResponseEntity.badRequest().build(); 
+        }
 
         Map<String, Object> claims = ssiBrokerService.getUserClaims(requestId, true);
-        if (claims == null) {
-            log.debug("authenticate.error; no claims found for {}:{}", "OIDC", requestId);      
-            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        AccessRequestStatusDto sts = (AccessRequestStatusDto) claims.get(TrustServiceClient.PN_STATUS);
+        try {
+	        switch (sts) {
+	            case ACCEPTED:
+	                return ResponseEntity.status(HttpStatus.FOUND).build();
+	            case REJECTED:
+	                response.sendRedirect(request.getContextPath() + "/ssi/login?error=" + SsiAuthErrorCodes.LOGIN_REJECTED);
+	                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build(); 
+	            case TIMED_OUT:
+	                response.sendRedirect(request.getContextPath() + "/ssi/login?error=" + SsiAuthErrorCodes.LOGIN_TIMED_OUT);
+	                return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).build();
+	            default:    
+	            	return ResponseEntity.accepted().build();
+	        }
+        } catch (IOException ex) {
+        	ex.printStackTrace();
+        	return ResponseEntity.internalServerError().build(); 
         }
-        return new ResponseEntity<>(HttpStatus.FOUND);
     }
 
   /* @GetMapping(value = "/logout")
@@ -146,9 +147,23 @@ public class SsiController {
         try {
             return resourceBundle.getString(errorCode);
         } catch (Exception ex) {
-            log.warn("login.error; no resource found for error: {}", errorCode);
+            log.warn("getErrorMessage.error; no resource found for error: {}", errorCode);
         }
         return errorCode;
+    }
+    
+    private Locale getLocale(HttpServletRequest request) {
+        Locale locale; 
+        String lang = request.getParameter("lang");
+        if (lang == null) {
+            locale = (Locale) request.getSession().getAttribute("session.current.locale");
+            if (locale == null) {
+                locale = request.getLocale();
+            }
+        } else {
+            locale = Locale.forLanguageTag(lang);
+        }
+    	return locale;
     }
 
     private String getSubject(String idToken) {
@@ -206,3 +221,4 @@ public class SsiController {
     }
     
 }
+ 
