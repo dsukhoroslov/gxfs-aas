@@ -278,7 +278,7 @@ public class AuthorizationServerConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/oauth2/**", config);
         source.registerCorsConfiguration("/logout", config);
-        //source.registerCorsConfiguration("/ssi/logout", config);
+        source.registerCorsConfiguration("/ssi/logout", config);
         return source;
     }
 
