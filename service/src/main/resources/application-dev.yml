@@ -7,23 +7,6 @@ server:
     mbeanregistry:
       enabled: true
 
-spring:
-  application:
-    name: auth-service
-  messages:
-    encoding: ISO-8859-1
-    
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-
-springdoc:
-  api-docs:
-    path: /api/docs
-    enabled: true
-
 aas:
   cache:
     size: 0

@@ -1,0 +1,25 @@
+server:
+  port: 8990
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          demo-app-oidc:
+            provider: aas-app
+            client-id: demo-app
+            client-secret: secret
+            scope: 
+              - openid
+              - profile
+        provider:
+          aas-app:
+#            issuer-uri: https://auth-server.gxfs.dev
+#            issuer-uri: http://key-server.gxfs.dev/realms/gaia-x
+#            issuer-uri: https://key-server.gxfs.dev/realms/gaia-x
+#            issuer-uri: http://key-server:8080/realms/gaia-x
+            issuer-uri: http://auth-server:9000
+
+logging:
+  level:
+    org.springframework.security: TRACE            

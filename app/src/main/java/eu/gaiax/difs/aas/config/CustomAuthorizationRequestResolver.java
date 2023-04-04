@@ -33,7 +33,8 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
         log.debug("resolve1.enter; request: {}", request);
         OAuth2AuthorizationRequest req = defaultResolver.resolve(request);
-        if (req == null && request.getServletPath().endsWith("/" + registrationId) && request.getParameter("session_state") == null) {
+        //log.debug("resolve1; resolved: {}", req);
+        if (req == null && request.getServletPath().endsWith("/" + registrationId) && request.getParameter("code") == null) { //session_state
             CustomHttpRequest copy = new CustomHttpRequest(request);
             copy.addParameter("action", "login");
             req = defaultResolver.resolve(copy, registrationId);
@@ -78,14 +79,12 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
 
         @Override
         public String getParameter(String name) {
-            if (params.get(name) != null ) {
-                return params.get(name);
-            }
-            return super.getParameter(name);
+            String value = params.get(name);
+            return value == null ? super.getParameter(name) : value;
         }
 
         void addParameter(String name, String value) {
-            params.put( name, value );
+            params.put(name, value);
         }
     }
 

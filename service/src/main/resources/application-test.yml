@@ -1,5 +1,8 @@
 server:
   port: 9000
+  tomcat:
+    mbeanregistry:
+      enabled: true
 
 management:
   endpoints:
@@ -9,19 +12,83 @@ management:
 
 aas:
   cache:
+    size: 0
     ttl: 1m
   iam:
+    base-uri: http://key-server:8080
     iat:
+      dcr-uri: ${aas.iam.base-uri}/realms/gaia-x/clients-registrations/openid-connect
+      redirect-uri: ${aas.oidc.issuer}/*
       secret: eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJkMDc0OWE1MS04YTJmLTRkOWQtYTk2YS1jNzhjYTQyZmNlMTUifQ.eyJleHAiOjAsImlhdCI6MTY1Mjc4NTk2MCwianRpIjoiMjRjYjI2N2ItMmUwZi00YzQ5LTg0MGItYWUyNjQyNDg1OTU4IiwiaXNzIjoiaHR0cDovL2tleS1zZXJ2ZXI6ODA4MC9yZWFsbXMvZ2FpYS14IiwiYXVkIjoiaHR0cDovL2tleS1zZXJ2ZXI6ODA4MC9yZWFsbXMvZ2FpYS14IiwidHlwIjoiSW5pdGlhbEFjY2Vzc1Rva2VuIn0.IWu2-nP4ojXMxLn9B9lz7c-YQ-LDGhI9XUKdoa0f2tA
+    clients:
+      demo:
+        id: demo-app
+        secret: "{noop}secret"
+        redirect-uris: 
+          - http://test-server:8990/login/oauth2/code/demo-app-oidc
+      oidc:
+        id: aas-app-oidc
+        secret: "{noop}secret1"
+        redirect-uris: 
+          - ${aas.iam.base-uri}/realms/gaia-x/broker/ssi-oidc/endpoint
+      siop:
+        id: aas-app-siop
+        secret: "{noop}secret2"
+        redirect-uris: 
+          - ${aas.iam.base-uri}/realms/gaia-x/broker/ssi-siop/endpoint
+      gxfs:
+        id: gxfs-demo
+#        secret: "{noop}hmi-secret2"
+        redirect-uris: 
+          - https://demo.gxfs.dev
+      portal:
+        id: demo-portal
+        secret: "{noop}demo-portal"
+        redirect-uris: 
+          - https://fc-demo-server.gxfs.dev
+          - https://fc-server.gxfs.dev
+          - http://78.138.66.181:8088/*
+  jwk:
+      length: 3072
+      secret: 96ec048e-c640-4cfd-bc82-6571810a9d0f
   oidc:
     issuer: http://auth-server:9000
-#  token:
-#    ttl: 1m
+    static-scopes:
+  siop:
+    clock-skew: 5s 
+    issuer: https://self-issued.me/v2
+  scopes:
+    openid:
+      - sub
+      - iss
+      - auth_time
+    profile:
+      - name
+      - given_name
+      - family_name
+      - middle_name
+      - preferred_username
+      - gender
+      - birthdate
+      - updated_at
+    email:
+      - email
+      - email_verified
+  token:
+    ttl: 5m
   tsa:
+    url: http://trustservice/api
+    repo: aisbl
+    group: example
+    version: 1.0
+    action: evaluation
     delay: 100
     duration: 1000
     request:
       count: 1
+    statuses:
+      GetLoginProofResult: ACCEPTED
+      GetIatProofResult: ACCEPTED
 
 logging:
   level:
@@ -29,4 +96,4 @@ logging:
     tsclaims: DEBUG
     org.springframework.web: DEBUG
     org.springframework.security: DEBUG
-    eu.gaiax.difs.aas: DEBUG
+    eu.gaiax.difs.aas: DEBUG    

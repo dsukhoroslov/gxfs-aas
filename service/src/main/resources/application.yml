@@ -3,10 +3,23 @@ server:
   servlet:
     session:
       timeout: 10m
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
   
 spring:
   application:
     name: auth-service
+  messages:
+    encoding: ISO-8859-1
+
+springdoc:
+  api-docs:
+    path: /api/docs
+    enabled: true
 
 logging:
   level:
