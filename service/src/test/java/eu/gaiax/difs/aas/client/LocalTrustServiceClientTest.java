@@ -8,6 +8,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import eu.gaiax.difs.aas.generated.model.AccessRequestStatusDto;
 import eu.gaiax.difs.aas.model.TrustServicePolicy;
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
 
 import java.util.Collections;
 import java.util.Map;
@@ -18,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ActiveProfiles("dev")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureEmbeddedDatabase(provider = DatabaseProvider.ZONKY)
 public class LocalTrustServiceClientTest {
 
     @Value("${aas.oidc.issuer}")

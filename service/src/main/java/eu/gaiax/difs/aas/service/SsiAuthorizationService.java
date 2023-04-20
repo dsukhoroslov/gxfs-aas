@@ -7,13 +7,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
-//import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.OAuth2AuthorizationCode;
-//import org.springframework.security.oauth2.core.OAuth2RefreshToken;
-import org.springframework.security.oauth2.core.OAuth2TokenType;
-//import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationCode;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.util.Assert;
 
 import eu.gaiax.difs.aas.cache.DataCache;
@@ -43,7 +40,7 @@ public class SsiAuthorizationService implements OAuth2AuthorizationService {
                 removed = codes.remove(authorizationCode.getToken().getTokenValue()) != null;
             }
         }
-        log.debug("synchronize.exit; removed: {}", removed);
+        log.debug("synchronize.exit; removed: {}, authorizations: {}, codes: {}", removed, authorizations.estimatedSize(), codes.size());
     }
     
     @Override
@@ -80,14 +77,14 @@ public class SsiAuthorizationService implements OAuth2AuthorizationService {
         Assert.hasText(token, "token cannot be empty");
         String tkType = tokenType == null ? null : tokenType.getValue();
         log.debug("findByToken.enter; got token: {}, type: {}", token, tkType);
-        if ("code".equals(tokenType.getValue())) {
+        //if ("code".equals(tokenType.getValue())) {
             String id = codes.get(token);
             if (id != null) {
                 OAuth2Authorization authorization = findById(id);
                 log.debug("findByToken.exit; returning auth from codes: {}", printAuth(authorization));
                 return authorization;
             }
-        }
+        //}
         
         log.info("findByToken.exit; no authorization found for token: {}, type: {}; authorizations size: {}, codes size: {}", 
                 token, tkType, authorizations.estimatedSize(), codes.size());
@@ -100,7 +97,7 @@ public class SsiAuthorizationService implements OAuth2AuthorizationService {
         }
         return null;
     }
-    
+
     private String printAuth(OAuth2Authorization authorization) {
         return "[id: " + authorization.getId() + ", principalName: " + authorization.getPrincipalName() +
             ", registeredClientId: " + authorization.getRegisteredClientId() + ", accessToken: " + (authorization.getAccessToken() == null ? 

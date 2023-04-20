@@ -11,22 +11,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.server.authorization.oidc.authentication.OidcUserInfoAuthenticationToken;
-import org.springframework.security.oauth2.server.resource.BearerTokenAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
-public class SsiAuthManager implements AuthenticationManager {
+public class SsiUserInfoAuthProvider implements AuthenticationProvider {
 
-    private static final Logger log = LoggerFactory.getLogger(SsiAuthManager.class);
+    private static final Logger log = LoggerFactory.getLogger(SsiUserInfoAuthProvider.class);
     
-    @Autowired
-    private SsiBrokerService ssiBrokerService;
+    private SsiBrokerService ssiBroker;
     
-    @Override
+    public SsiUserInfoAuthProvider(SsiBrokerService ssiBroker) {
+    	this.ssiBroker = ssiBroker;
+    }
+    
+    @SuppressWarnings("unchecked")
+	@Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         log.debug("authenticate.enter; got authentication: {}", authentication);
         String requestId = null;
@@ -34,15 +39,12 @@ public class SsiAuthManager implements AuthenticationManager {
         if (authentication instanceof OidcUserInfoAuthenticationToken) {
             requestId = ((JwtAuthenticationToken) authentication.getPrincipal()).getToken().getSubject();
             scopes = ((JwtAuthenticationToken) authentication.getPrincipal()).getToken().getClaimAsStringList("scope");
-        } else if (authentication instanceof BearerTokenAuthenticationToken) {
-            requestId = ((BearerTokenAuthenticationToken) authentication).getName(); // .getToken();
-            scopes = Collections.emptyList();
         }
         log.debug("authenticate; subject: {}, scopes: {}", requestId, scopes);
         
         boolean needAuthTime = false;
         Set<String> additionalClaims;
-        Map<String, Object> additionalParams = ssiBrokerService.getAdditionalParameters(requestId);
+        Map<String, Object> additionalParams = ssiBroker.getAdditionalParameters(requestId);
         if (additionalParams != null) {
             additionalClaims = new HashSet<>();
             Map<String, Object> userInfo = (Map<String, Object>) additionalParams.get("userinfo");
@@ -58,7 +60,7 @@ public class SsiAuthManager implements AuthenticationManager {
         }
 
         OidcUserInfo.Builder uiBuilder = OidcUserInfo.builder();
-        Map<String, Object> userDetails = ssiBrokerService.getUserClaims(requestId, false, scopes, additionalClaims); //required?
+        Map<String, Object> userDetails = ssiBroker.getUserClaims(requestId, false, scopes, additionalClaims); //required?
         //log.debug("authenticate; user claims: {}", userDetails);
         if (userDetails != null) {
             for (Map.Entry<String, Object> e: userDetails.entrySet()) {
@@ -73,5 +75,10 @@ public class SsiAuthManager implements AuthenticationManager {
         log.debug("authenticate.exit; returning claims: {}, for subject: {}", claims, requestId);
         return token;
     }
+
+	@Override
+	public boolean supports(Class<?> authentication) {
+		return OidcUserInfoAuthenticationToken.class.isAssignableFrom(authentication);
+	}
 
 }

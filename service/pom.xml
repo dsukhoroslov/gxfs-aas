@@ -28,11 +28,11 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -48,12 +48,11 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-cas</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -65,17 +64,29 @@
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <scope>provided</scope>
+            <!--scope>provided</scope-->
         </dependency>
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        </dependency>        
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>          
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>core</artifactId>
@@ -88,6 +99,31 @@
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+        </dependency>
+        <!-- test dependencies -->          
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.zonky.test</groupId>
+            <artifactId>embedded-postgres</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.zonky.test</groupId>
+            <artifactId>embedded-database-spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>         
     </dependencies>
 
     <build>
@@ -149,20 +185,21 @@
                     <generateApiDocumentation>false</generateApiDocumentation>
                     <generateModelDocumentation>false</generateModelDocumentation>
                     <configOptions>
-                        <serializableModel>true</serializableModel>
-                        <oas3>true</oas3>
-                        <useSpringfox>false</useSpringfox>
+                        <!--serializableModel>true</serializableModel-->
+                        <useSwaggerUI>true</useSwaggerUI>
+                        <useSpringBoot3>true</useSpringBoot3>
                     </configOptions>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>generate-SSIClientRegistrationAuth-java-server</id>
+                        <id>generate-aas-rest-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>generate</goal>
                         </goals>
                         <configuration>
                             <skipValidateSpec>true</skipValidateSpec>
+                            <!--generateSupportingFiles>false</generateSupportingFiles-->
                             <inputSpec>${project.basedir}/src/main/resources/openapi/iat_provider.yml</inputSpec>
                             <generatorName>spring</generatorName>
                             <supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
@@ -175,26 +212,10 @@
                                 <delegatePattern>true</delegatePattern>
                                 <library>spring-boot</library>
                                 <openApiNullable>false</openApiNullable>
-                            </configOptions>
+                            </configOptions>          
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <configuration>
-                    <!--suppressionFile>./owasp/suppressions.xml</suppressionFile-->
-                    <failBuildOnAnyVulnerability>false</failBuildOnAnyVulnerability>
-                    <!--failBuildOnCVSS>50</failBuildOnCVSS-->
-                </configuration>
-                <!--executions>
-                    <execution>
-                        <goals>
-                            <goal>aggregate</goal>
-                        </goals>
-                    </execution>
-                </executions-->
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

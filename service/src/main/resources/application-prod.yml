@@ -6,7 +6,15 @@ management:
     web:
       exposure:
         include: health, info, metrics, prometheus
-      
+
+#aas:
+#  iam:
+#    base-uri: https://key-server.gxfs.dev          
+#  oidc:
+#    issuer: https://auth-server.gxfs.dev
+#  tsa:
+#    url: https://gaiax.vereign.com/tsa/policy
+    
 logging:
   level:
     root: INFO

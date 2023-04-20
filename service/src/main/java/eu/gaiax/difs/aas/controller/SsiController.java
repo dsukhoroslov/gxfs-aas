@@ -26,8 +26,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -54,13 +54,12 @@ public class SsiController {
             String out = request.getParameter("logout");
             if (out == null) {
                 model.addAttribute("errorMessage", getErrorMessage("sessionTimeout", locale));
-                return "login-template.html";
             } else {
                 model.addAttribute(OAuth2ParameterNames.SCOPE, new String[] {OidcScopes.OPENID});
                 // assume OIDC client for now..
                 request.getSession().setAttribute("requestId", ssiBrokerService.oidcAuthorize(model.asMap()));
-                return "login-template.html";
             }
+            return "login-template.html";
         }
         
         model.addAttribute(OAuth2ParameterNames.SCOPE, auth.getParameterValues(OAuth2ParameterNames.SCOPE));
@@ -110,10 +109,10 @@ public class SsiController {
 	            case ACCEPTED:
 	                return ResponseEntity.status(HttpStatus.FOUND).build();
 	            case REJECTED:
-	                response.sendRedirect(request.getContextPath() + "/ssi/login?error=" + SsiAuthErrorCodes.LOGIN_REJECTED);
+	                response.sendRedirect("/ssi/login?error=" + SsiAuthErrorCodes.LOGIN_REJECTED);
 	                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build(); 
 	            case TIMED_OUT:
-	                response.sendRedirect(request.getContextPath() + "/ssi/login?error=" + SsiAuthErrorCodes.LOGIN_TIMED_OUT);
+	                response.sendRedirect("/ssi/login?error=" + SsiAuthErrorCodes.LOGIN_TIMED_OUT);
 	                return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).build();
 	            default:    
 	            	return ResponseEntity.accepted().build();
@@ -183,7 +182,7 @@ public class SsiController {
     public ResponseEntity<byte[]> getQR(@PathVariable String qrid) {
         return ResponseEntity.ok(ssiBrokerService.getQR(qrid));
     }
-
+    
     @ResponseBody
     @PostMapping(value = "/siop-callback", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     public void siopCallback(@RequestParam MultiValueMap<String, Object> body) {

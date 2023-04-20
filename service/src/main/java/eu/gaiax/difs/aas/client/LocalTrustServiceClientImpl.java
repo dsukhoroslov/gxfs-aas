@@ -15,8 +15,8 @@ import eu.gaiax.difs.aas.generated.model.AccessRequestStatusDto;
 import eu.gaiax.difs.aas.properties.StatusProperties;
 import lombok.extern.slf4j.Slf4j;
 
-import static eu.gaiax.difs.aas.model.TrustServicePolicy.*;
 import static eu.gaiax.difs.aas.generated.model.AccessRequestStatusDto.*;
+import static eu.gaiax.difs.aas.model.TrustServicePolicy.*;
 
 @Slf4j
 public class LocalTrustServiceClientImpl implements TrustServiceClient {
@@ -55,7 +55,7 @@ public class LocalTrustServiceClientImpl implements TrustServiceClient {
         }
 
         if (GET_LOGIN_PROOF_INVITATION.equals(policy)) {
-            map.put(PN_LINK, "uri://" + requestId);
+            map.put(PN_LINK, LINK_SCHEME + requestId);
             return map;
         }
 
@@ -89,7 +89,7 @@ public class LocalTrustServiceClientImpl implements TrustServiceClient {
             map.put(IdTokenClaimNames.ISS, oidcIssuer);
         }
 
-        log.debug("Called local trust service client; policy: {}, params: {}, result: {} ", policy, params, map);
+        log.debug("evaluate.exit; policy: {}, params: {}, result: {} ", policy, params, map);
         return map;
     }
 

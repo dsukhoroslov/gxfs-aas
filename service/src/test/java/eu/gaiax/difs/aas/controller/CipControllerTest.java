@@ -2,6 +2,7 @@ package eu.gaiax.difs.aas.controller;
 
 import static eu.gaiax.difs.aas.generated.model.AccessRequestStatusDto.ACCEPTED;
 import static eu.gaiax.difs.aas.generated.model.AccessRequestStatusDto.REJECTED;
+import static eu.gaiax.difs.aas.client.TrustServiceClient.LINK_SCHEME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -29,11 +30,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.gaiax.difs.aas.client.LocalTrustServiceClientImpl;
 import eu.gaiax.difs.aas.client.TrustServiceClient;
 import eu.gaiax.difs.aas.model.TrustServicePolicy;
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
 
 @SpringBootTest
 @ActiveProfiles("dev")
 @ExtendWith(SpringExtension.class)
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
+@AutoConfigureEmbeddedDatabase(provider = DatabaseProvider.ZONKY)
 public class CipControllerTest {
 
     private static final TypeReference<Map<String, Object>> MAP_TYPE_REF = new TypeReference<Map<String, Object>>() {
@@ -91,7 +95,7 @@ public class CipControllerTest {
         assertNotNull(claims.get("requestId"));
         String requestId = (String) claims.get("requestId");
         assertNotNull(claims.get("link"));
-        assertEquals("uri://qwerty890", claims.get("link"));
+        assertEquals(LINK_SCHEME + "qwerty890", claims.get("link"));
         assertNotNull(claims.get(IdTokenClaimNames.SUB));
         assertNull(claims.get(IdTokenClaimNames.ISS));
         assertNull(claims.get(IdTokenClaimNames.AUTH_TIME));

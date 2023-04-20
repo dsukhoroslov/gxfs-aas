@@ -20,7 +20,10 @@
 
 package eu.gaiax.difs.aas.config;
 
+import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -32,53 +35,61 @@ import org.springframework.security.oauth2.server.authorization.token.JwtEncodin
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+//import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 
 import eu.gaiax.difs.aas.service.SsiAuthProvider;
 import eu.gaiax.difs.aas.service.SsiJwtCustomizer;
-import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The Spring Security config.
  */
-@EnableWebSecurity //(debug = true)
+@Slf4j
+@EnableWebSecurity//(debug = true)
+@Configuration
 public class SecurityConfig {
 
-    private final String[] ANT_MATCHERS = {
-            "/api/**",
-            "/swagger-ui/**",
-//            "/login",
-//            "/error",
-            "/actuator",
-            "/actuator/**",
-            "/**/*.{js,html,css}",
-//            "/oauth2/**",
-            "/.well-known/**",
-            "/cip/**",
-            "/clients/**",
-            "/ssi/**"
-    };
-
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-          .csrf()
-            .disable()
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+    	log.debug("defaultSecurityFilterChain.enter");
+    	HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
+        requestCache.setRequestMatcher(new OrRequestMatcher(antMatcher("/oauth2/**"), antMatcher("/connect/**")));
+        requestCache.setMatchingRequestParameterName(null);
+    	http
+            .csrf()
+                .disable()
             .cors()
-          .and()
-            .authorizeRequests()
-                .antMatchers(ANT_MATCHERS).permitAll()
-                .antMatchers(HttpMethod.OPTIONS, "/oauth2/token").permitAll()
-                .anyRequest().authenticated()
-          .and()
+            .and()	
+        	.authorizeHttpRequests(authorize -> authorize 
+        			.requestMatchers(antMatcher("/api/**")).permitAll()
+        			.requestMatchers(antMatcher("/swagger-ui/**")).permitAll()
+        			.requestMatchers(antMatcher("/login")).permitAll()
+        			.requestMatchers(antMatcher("/error")).permitAll()
+        			.requestMatchers(antMatcher("/actuator")).permitAll()
+        			.requestMatchers(antMatcher("/actuator/**")).permitAll()
+        			.requestMatchers(antMatcher("/.well-known/**")).permitAll()
+        			.requestMatchers(antMatcher("/cip/**")).permitAll()
+        			.requestMatchers(antMatcher("/clients/**")).permitAll()
+        			//.requestMatchers(antMatcher("/connect/**")).permitAll()
+        			.requestMatchers(antMatcher("/ssi/**")).permitAll()
+        			.requestMatchers(antMatcher(HttpMethod.OPTIONS, "/oauth2/token")).permitAll()
+        			.anyRequest().authenticated()
+        		)
             .formLogin()
+       	        //.loginPage("/ssi/login")
                 .failureHandler(ssiAuthenticationFailureHandler())
           //.and()
           //  .exceptionHandling()
           //      .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
-          .and()
-            .logout().
-                logoutSuccessUrl("/ssi/login?logout")
-            .invalidateHttpSession(true);
+            .and()
+                .logout()
+                    .logoutSuccessUrl("/ssi/login?logout")
+                    .invalidateHttpSession(true)
+            .and()
+            	.requestCache(cache -> cache.requestCache(requestCache));
+    	log.debug("defaultSecurityFilterChain.exit");
         return http.build();
     }
 
@@ -103,7 +114,7 @@ public class SecurityConfig {
             if (error == null && exception instanceof OAuth2AuthenticationException) {
                 error = ((OAuth2AuthenticationException) exception).getError().getErrorCode();
             }
-            String redirectUrl = request.getContextPath() + "/ssi/login?error=" + error;
+            String redirectUrl = "/ssi/login?error=" + error;
             response.sendRedirect(redirectUrl);
         };
     }

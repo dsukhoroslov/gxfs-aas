@@ -34,11 +34,14 @@ import eu.gaiax.difs.aas.generated.model.AccessRequestDto;
 import eu.gaiax.difs.aas.generated.model.AccessResponseDto;
 import eu.gaiax.difs.aas.generated.model.ServiceAccessScopeDto;
 import eu.gaiax.difs.aas.model.TrustServicePolicy;
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
 
 @SpringBootTest
 @ActiveProfiles("dev")
 @ExtendWith(SpringExtension.class)
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
+@AutoConfigureEmbeddedDatabase(provider = DatabaseProvider.ZONKY)
 public class IatProvisionFlowTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();

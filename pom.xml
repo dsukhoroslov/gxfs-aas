@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.0</version>
-        <relativePath/>
+        <version>3.0.1</version>
+        <relativePath />
     </parent>
 
     <groupId>eu.gaiax.difs.aas</groupId>
@@ -24,42 +23,35 @@
 
     <modules>
         <module>app</module>
-        <!--module>keycloak</module-->
-        <module>demo</module>
+        <!--module>demo</module-->
         <module>service</module>
     </modules>
 
     <properties>
         <!-- java -->
-        <java.version>11</java.version>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <!-- charset -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <!-- dependencies -->
-        <spring-boot.version>2.7.0</spring-boot.version>
-        <spring.security.version>5.7.2</spring.security.version>
-        <spring.auth-server.version>0.3.1</spring.auth-server.version>
-        <springdoc.version>1.6.8</springdoc.version>
-        <lombok.version>1.18.22</lombok.version>
-        <micrometer.version>1.9.0</micrometer.version>
-        <zxing.version>3.5.0</zxing.version>
-        <caffeine.version>3.1.1</caffeine.version>
-        <!-- plugins -->
-        <plugin.owasp.version>7.1.0</plugin.owasp.version>
-        <plugin.maven-assembly.version>3.3.0</plugin.maven-assembly.version>
-        <plugin.checkstyle.version>3.1.2</plugin.checkstyle.version>
-        <plugin.sonar.version>3.9.1.2184</plugin.sonar.version>
-        <plugin.jacoco.version>0.8.7</plugin.jacoco.version>
+        <spring-boot.version>3.0.4</spring-boot.version>
+        <spring.security.version>6.0.2</spring.security.version>
+        <spring.auth-server.version>1.0.1</spring.auth-server.version>
+        <spring.security-cas.version>5.8.2</spring.security-cas.version>
+        <springdoc.version>2.0.2</springdoc.version>
+        <lombok.version>1.18.24</lombok.version>
+        <micrometer.version>1.10.3</micrometer.version>
+        <embedded.postgres.version>2.0.3</embedded.postgres.version>
+        <embedded.postgres.test.version>2.2.0</embedded.postgres.test.version>
+        <liquibase.version>4.20.0</liquibase.version>
+        <zxing.version>3.5.1</zxing.version>
+        <caffeine.version>3.1.5</caffeine.version>
         <!-- license -->
         <license.projectName>GAIA-X Authentication and Authorization Service</license.projectName>
         <license.inceptionYear>2021</license.inceptionYear>
         <license.licenseName>apache_v2</license.licenseName>
-        <!-- sonar -->
-        <sonar.organization>gaia-x</sonar.organization>
-        <sonar.projectKey>${sonar.organization}_${project.artifactId}</sonar.projectKey>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <!-- repoositiry path -->
         <repository.path>gaia-x/data-infrastructure-federation-services/authenticationauthorization</repository.path>
         <!--jib-->
@@ -70,7 +62,7 @@
     <url>https://gitlab.com/${repository.path}</url>
     <scm>
         <url>https://gitlab.com/${repository.path}</url>
-        <connection>scm:git:git://gitlab.com/${repository.path}.git/</connection>
+        <connection>scm:git:git://gitlab.com/${repository.path}.git</connection>
         <!--developerConnection>scm:git:ssh://gitlab.com:dsukhoroslov/${repository.path}.git</developerConnection-->
         <tag>HEAD</tag>
     </scm>
@@ -95,6 +87,11 @@
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-jdbc</artifactId>
+                <version>${spring-boot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-security</artifactId>
                 <version>${spring-boot.version}</version>
             </dependency>
@@ -105,24 +102,13 @@
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-tomcat</artifactId>
-                <version>${spring-boot.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-web</artifactId>
                 <version>${spring-boot.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-test</artifactId>
-                <scope>test</scope>
-                <version>${spring-boot.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.security.oauth.boot</groupId>
-                <artifactId>spring-security-oauth2-autoconfigure</artifactId>
-                <version>${spring-boot.version}</version>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-cas</artifactId>
+                <version>${spring.security-cas.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
@@ -136,13 +122,13 @@
             </dependency>
             <dependency>
                 <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-ui</artifactId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <scope>provided</scope>
+                <!--scope>provided</scope-->
                 <version>${lombok.version}</version>
             </dependency>
             <dependency>
@@ -165,6 +151,36 @@
                 <artifactId>caffeine</artifactId>
                 <version>${caffeine.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-core</artifactId>
+                <version>${liquibase.version}</version>
+            </dependency>
+            <!-- test dependencies -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-test</artifactId>
+                <scope>test</scope>
+                <version>${spring-boot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-test</artifactId>
+                <version>${spring.security.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.zonky.test</groupId>
+                <artifactId>embedded-postgres</artifactId>
+                <version>${embedded.postgres.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.zonky.test</groupId>
+                <artifactId>embedded-database-spring-test</artifactId>
+                <version>${embedded.postgres.test.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -174,7 +190,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>${plugin.checkstyle.version}</version>
+                    <version>3.1.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -186,45 +202,25 @@
                     <artifactId>license-maven-plugin</artifactId>
                     <version>2.0.0</version>
                 </plugin>
-                <!--plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-war-plugin</artifactId>
-                    <version>3.3.1</version>
-                </plugin-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.2.0</version>
                 </plugin>
-                <!--plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>${plugin.maven-assembly.version}</version>
-                </plugin-->
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                     <version>${spring-boot.version}</version>
                 </plugin>
                 <plugin>
-                    <groupId>org.owasp</groupId>
-                    <artifactId>dependency-check-maven</artifactId>
-                    <version>${plugin.owasp.version}</version>
-                </plugin>
-                <plugin>
                     <groupId>org.openapitools</groupId>
                     <artifactId>openapi-generator-maven-plugin</artifactId>
-                    <version>5.4.0</version>
+                    <version>6.4.0</version>
                 </plugin>
                 <plugin>
                     <groupId>com.google.cloud.tools</groupId>
                     <artifactId>jib-maven-plugin</artifactId>
-                    <version>3.2.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.sonarsource.scanner.maven</groupId>
-                    <artifactId>sonar-maven-plugin</artifactId>
-                    <version>3.7.0.1746</version>
+                    <version>3.2.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -259,19 +255,17 @@
                 <artifactId>jib-maven-plugin</artifactId>
                 <configuration>
                     <container>
+						<!-- ${maven.build.timestamp} should work also -->
                         <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
-                    </container>	
+                    </container>
                     <to>
                         <image>${ci-registry}/${imagename}</image>
-                        <!--image>${ci-registry}/${project.name}-image</image-->
+                        <!--image>${ci-registry}/${project.artifactId}:${project.version}</image-->
                         <auth>
                             <username>${env.CI_REGISTRY_USER}</username>
                             <password>${env.CI_REGISTRY_PASSWORD}</password>
                         </auth>
                     </to>
-                    <!--container>
-                        <mainClass>eu.gaiax.difs.aas.AuthServiceApplication</mainClass>
-                    </container-->
                 </configuration>
             </plugin>
             <plugin>
