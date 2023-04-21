@@ -41,19 +41,19 @@ server:
 config:
   profile: prod
 
-properties: 
+properties:
   management:
     endpoints:
       web:
         exposure:
-          include: health, info, metrics, prometheus
+          include: "*" #health, info, metrics, prometheus
   spring:
     application:
       name: auth-service
     datasource:
-      url: jdbc:postgresql://localhost:5432/postgres
-      username: postgres
-      password: postgres
+      url: jdbc:postgresql://${PG_HOST:localhost}:${PG_PORT:5432}/${PG_DB:postgres}
+      username: ${PG_USER:postgres}
+      password: ${PG_PASSWORD:postgres}
       platform: postgresql
     liquibase:
       change-log: classpath:/liquibase/aas-changelog.xml

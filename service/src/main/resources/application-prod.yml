@@ -7,6 +7,13 @@ management:
       exposure:
         include: health, info, metrics, prometheus
 
+spring:
+  datasource:
+    url: jdbc:postgresql://${PG_HOST:localhost}:${PG_PORT:5432}/${PG_DB:postgres}
+    username: ${PG_USER:postgres}
+    password: ${PG_PASSWORD:postgres}
+    platform: postgresql
+
 #aas:
 #  iam:
 #    base-uri: https://key-server.gxfs.dev          

@@ -21,12 +21,6 @@ spring:
     username: postgres
     password: postgres
     platform: postgresql
-    hikari:
-      connectionTimeout: 30000
-      idleTimeout: 600000
-      maxLifetime: 1800000
-      minimumIdle: 8
-      maximumPoolSize: 128
   liquibase:
     change-log: classpath:/liquibase/aas-changelog.xml
   messages:

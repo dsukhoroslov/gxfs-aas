@@ -60,6 +60,10 @@ spec:
                   configMapKeyRef:
                     name: {{ include "app.fullname" . }}-spring-config
                     key: application.json
+              - name: PG_HOST
+                value: ocm-postgres-rw.ocm.svc.cluster.local
+              - name: PG_DB
+                value: aas        
             ports:
               - name: "http"
                 containerPort: {{ .Values.server.http.port }}
