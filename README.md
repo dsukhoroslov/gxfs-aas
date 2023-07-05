@@ -1,5 +1,5 @@
 # Authentication & Authorization Service
-
+This project has been migrated to Eclipse Foundation, and it can be found at https://gitlab.eclipse.org/eclipse/xfsc/authenticationauthorization
 
 ## Description
 This is a Reference Implementation of GAIA-X LOT1 [Authentication & Authorization Service](https://www.gxfs.eu/authentication-authorisation/).
